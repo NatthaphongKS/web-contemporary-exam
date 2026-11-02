@@ -1,0 +1,61 @@
+{
+  "id": "module-frontend",
+  "title": "04. Frontend JavaScript Integration",
+  "description": "สูตรโค้ด Vanilla JS (Native Fetch API) ผูกเข้ากับ HTML/CSS ของอาจารย์ รองรับ CRUD ครบวงจร, FormData, และการแก้บั๊ก PUT Multipart",
+  "steps": [
+    {
+      "step": "4.1",
+      "title": "ตั้งค่า API Base URL & ดึงหมวดหมู่ใส่ Dropdown",
+      "description": "ดึงข้อมูลจาก GET /api/categories มาวนลูปสร้างแท็ก <option> ให้ผู้ใช้เลือกในฟอร์ม",
+      "badge": "JavaScript",
+      "code": "const API_BASE = 'http://localhost:8000/api';\n\n// ดึงหมวดหมู่มาใส่ใน Select dropdown\nasync function loadCategories() {\n  try {\n    const res = await fetch(`${API_BASE}/categories`);\n    const categories = await res.json();\n    \n    const selectEl = document.getElementById('category_id');\n    if (!selectEl) return;\n    \n    selectEl.innerHTML = '<option value=\"\">-- กรุณาเลือกหมวดหมู่ --</option>';\n    categories.forEach(cat => {\n      selectEl.innerHTML += `<option value=\"${cat.id}\">${cat.name}</option>`;\n    });\n  } catch (error) {\n    console.error('Error loading categories:', error);\n    alert('ไม่สามารถโหลดรายการหมวดหมู่ได้');\n  }\n}",
+      "lang": "javascript",
+      "file": "frontend/script.js"
+    },
+    {
+      "step": "4.2",
+      "title": "ดึงรายการหนังสือทั้งหมดมาแสดงในตาราง (GET /api/books)",
+      "description": "ดึงข้อมูลและ Render ลง <tbody> พร้อมแสดงรูปปก, สถานะยืม, และปุ่มแก้ไข/ลบ",
+      "badge": "JavaScript",
+      "code": "async function loadBooks() {\n  try {\n    const res = await fetch(`${API_BASE}/books`);\n    const books = await res.json();\n    \n    const tbody = document.getElementById('bookTableBody');\n    if (!tbody) return;\n    \n    if (books.length === 0) {\n      tbody.innerHTML = '<tr><td colspan=\"7\" style=\"text-align:center;\">ไม่พบข้อมูลหนังสือ</td></tr>';\n      return;\n    }\n    \n    tbody.innerHTML = books.map(b => `\n      <tr>\n        <td>${b.id}</td>\n        <td>\n          ${b.cover_url \n            ? `<img src=\"${b.cover_url}\" width=\"50\" height=\"70\" style=\"object-fit:cover; border-radius:4px;\">` \n            : '<span style=\"color:#888;\">ไม่มีปก</span>'}\n        </td>\n        <td><strong>${b.title}</strong></td>\n        <td>${b.author}</td>\n        <td>${b.category ? b.category.name : '-'}</td>\n        <td>${b.published_year}</td>\n        <td>\n          <span class=\"badge ${b.is_available ? 'badge-success' : 'badge-danger'}\">\n            ${b.is_available ? 'พร้อมยืม' : 'ถูกยืมแล้ว'}\n          </span>\n        </td>\n        <td>\n          <button onclick=\"openEditModal(${b.id})\" class=\"btn btn-sm btn-edit\">แก้ไข</button>\n          <button onclick=\"deleteBook(${b.id})\" class=\"btn btn-sm btn-delete\">ลบ</button>\n        </td>\n      </tr>\n    `).join('');\n  } catch (error) {\n    console.error('Error loading books:', error);\n  }\n}",
+      "lang": "javascript",
+      "file": "frontend/script.js"
+    },
+    {
+      "step": "4.3",
+      "title": "บันทึกข้อมูลหนังสือใหม่ (POST /api/books)",
+      "description": "ดึงค่าจากฟอร์มผ่าน FormData เพื่อส่งข้อมูลพร้อมไฟล์รูปภาพปกไปยัง API",
+      "badge": "JavaScript",
+      "code": "async function handleCreateBook(event) {\n  event.preventDefault();\n  const form = event.target;\n  const formData = new FormData(form);\n  \n  // จัดการค่า Checkbox is_available ให้เป็น 1 หรือ 0\n  const isAvailableCheckbox = form.querySelector('[name=\"is_available\"]');\n  formData.set('is_available', isAvailableCheckbox && isAvailableCheckbox.checked ? '1' : '0');\n\n  try {\n    const res = await fetch(`${API_BASE}/books`, {\n      method: 'POST',\n      body: formData // ห้ามตั้ง Header Content-Type เมื่อใช้ FormData เบราว์เซอร์จะใส่ multipart boundary ให้อัตโนมัติ\n    });\n\n    if (res.status === 201) {\n      alert('เพิ่มหนังสือสำเร็จ!');\n      form.reset();\n      closeModal();\n      loadBooks();\n    } else {\n      const errData = await res.json();\n      alert('เกิดข้อผิดพลาด: ' + (errData.message || JSON.stringify(errData.errors)));\n    }\n  } catch (error) {\n    console.error('Create error:', error);\n    alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');\n  }\n}",
+      "lang": "javascript",
+      "file": "frontend/script.js"
+    },
+    {
+      "step": "4.4",
+      "title": "แก้ไขข้อมูลหนังสือ (เทคนิค _method=PUT สำคัญมาก)",
+      "description": "PHP ไม่รองรับการอ่าน Multipart Form เมื่อส่งด้วยคำขอ PUT ดังนั้นต้องส่งเป็น POST แล้วแนบ _method=PUT ใน FormData",
+      "badge": "Laravel Pro-Tip",
+      "code": "async function handleUpdateBook(event, bookId) {\n  event.preventDefault();\n  const form = event.target;\n  const formData = new FormData(form);\n  \n  // [สำคัญที่สุด] หลอก Laravel ให้รู้ว่าเป็นคำขอ PUT ผ่าน POST\n  formData.append('_method', 'PUT');\n  \n  const isAvailableCheckbox = form.querySelector('[name=\"is_available\"]');\n  formData.set('is_available', isAvailableCheckbox && isAvailableCheckbox.checked ? '1' : '0');\n\n  try {\n    // ส่งด้วย method POST เสมอเพื่อให้อัปโหลดไฟล์สำเร็จ\n    const res = await fetch(`${API_BASE}/books/${bookId}`, {\n      method: 'POST',\n      body: formData\n    });\n\n    if (res.status === 200) {\n      alert('แก้ไขข้อมูลสำเร็จ!');\n      closeModal();\n      loadBooks();\n    } else {\n      const errData = await res.json();\n      alert('เกิดข้อผิดพลาด: ' + (errData.message || JSON.stringify(errData.errors)));\n    }\n  } catch (error) {\n    console.error('Update error:', error);\n  }\n}",
+      "lang": "javascript",
+      "file": "frontend/script.js"
+    },
+    {
+      "step": "4.5",
+      "title": "ลบข้อมูลหนังสือ (DELETE /api/books/:id)",
+      "description": "แสดง Confirm Dialog ก่อนส่งคำขอลบไปยัง Backend พร้อมอัปเดตตารางเมื่อสำเร็จ",
+      "badge": "JavaScript",
+      "code": "async function deleteBook(id) {\n  if (!confirm(`คุณต้องการลบหนังสือรหัส ${id} ใช่หรือไม่?`)) {\n    return;\n  }\n\n  try {\n    const res = await fetch(`${API_BASE}/books/${id}`, {\n      method: 'DELETE'\n    });\n\n    if (res.status === 200) {\n      alert('ลบหนังสือสำเร็จ');\n      loadBooks();\n    } else if (res.status === 404) {\n      alert('ไม่พบข้อมูลหนังสือเล่มนี้ในระบบ');\n    } else {\n      alert('ไม่สามารถลบข้อมูลได้');\n    }\n  } catch (error) {\n    console.error('Delete error:', error);\n  }\n}",
+      "lang": "javascript",
+      "file": "frontend/script.js"
+    },
+    {
+      "step": "4.6",
+      "title": "พรีวิวรูปภาพปกก่อนอัปโหลด (Image Preview Hook)",
+      "description": "เมื่อผู้ใช้เลือกไฟล์ปก แสดงรูปตัวอย่างทันทีก่อนกดยืนยันฟอร์ม",
+      "badge": "UI Helper",
+      "code": "function setupImagePreview(fileInputId, previewImgId) {\n  const input = document.getElementById(fileInputId);\n  const preview = document.getElementById(previewImgId);\n  if (!input || !preview) return;\n\n  input.addEventListener('change', function () {\n    const file = this.files[0];\n    if (file) {\n      const reader = new FileReader();\n      reader.onload = function (e) {\n        preview.src = e.target.result;\n        preview.style.display = 'block';\n      };\n      reader.readAsDataURL(file);\n    } else {\n      preview.src = '';\n      preview.style.display = 'none';\n    }\n  });\n}",
+      "lang": "javascript",
+      "file": "frontend/script.js"
+    }
+  ]
+}

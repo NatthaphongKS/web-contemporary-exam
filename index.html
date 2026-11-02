@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Contemporary - Practical Exam Companion & Cheatsheet</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-badge">Academic Revision Notes</span>
+        <h1 class="brand-title">Web Contemporary</h1>
+        <p class="brand-subtitle">Exam Companion & Cheatsheet</p>
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search" class="search-input" placeholder="ค้นหาคำสั่ง / โค้ด (กด / เพื่อค้นหา)...">
+      </div>
+
+      <div class="nav-section-title">ขั้นตอนการทำข้อสอบ</div>
+      <nav class="nav-list">
+        <a href="#module-setup" class="nav-item active" data-target="module-setup">
+          <span class="step-num">1</span>
+          <span>01. ติดตั้ง & ต่อ Database</span>
+        </a>
+        <a href="#module-database" class="nav-item" data-target="module-database">
+          <span class="step-num">2</span>
+          <span>02. Database & 2 ตาราง</span>
+        </a>
+        <a href="#module-api" class="nav-item" data-target="module-api">
+          <span class="step-num">3</span>
+          <span>03. Backend API & Upload</span>
+        </a>
+        <a href="#module-frontend" class="nav-item" data-target="module-frontend">
+          <span class="step-num">4</span>
+          <span>04. Frontend JS Integration</span>
+        </a>
+        <a href="#module-openapi" class="nav-item" data-target="module-openapi">
+          <span class="step-num">5</span>
+          <span>05. Swagger & Postman Gen</span>
+        </a>
+        <a href="#module-troubleshooting" class="nav-item" data-target="module-troubleshooting">
+          <span class="step-num">6</span>
+          <span>06. กับดัก & เช็กลิสต์ส่งสอบ</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Exam Banner -->
+      <div class="exam-banner">
+        <div class="exam-banner-icon">📌</div>
+        <div>
+          <h2>คู่มือเตรียมสอบปฏิบัติวิชา Web Contemporary</h2>
+          <p>เปิดเน็ตและค้นหาได้ แต่ <strong>ห้ามใช้ AI หรือเว็บไซต์/Extension AI เด็ดขาด</strong> (มีการบันทึก Screen Recording และ Net Log) เอกสารนี้รวบรวมคำสั่งและโค้ดพร้อมกดคัดลอก (1-Click Copy) เพื่อใช้ทำงานในห้องสอบได้อย่างรวดเร็วและปลอดภัย</p>
+        </div>
+      </div>
+
+      <!-- MODULE 1: SETUP -->
+      <section id="module-setup" class="module-section active">
+        <div class="section-header">
+          <div class="section-tag">STEP 1 • SETUP & LARAGON</div>
+          <h2 class="section-title">01. ติดตั้งโปรเจกต์ & เชื่อมต่อ Database</h2>
+          <p class="section-desc">ขั้นตอนการสร้างโปรเจกต์ Laravel บน Laragon, ตั้งค่า .env, และทดสอบการเชื่อมต่อ Database</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">1.1 สร้างโปรเจกต์ Laravel บน Laragon</h3>
+            <span class="step-badge">Terminal</span>
+          </div>
+          <p class="step-desc">เปิด Terminal ใน Laragon แล้วไปที่โฟลเดอร์ <code>C:\laragon\www</code> เพื่อสร้างโปรเจกต์ใหม่</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>cd C:\laragon\www
+composer create-project laravel/laravel library-app
+cd library-app</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">1.2 เปิดใช้งาน API Routing (สำหรับ Laravel 11)</h3>
+            <span class="step-badge">Laravel 11</span>
+          </div>
+          <p class="step-desc">Laravel 11 ไม่ได้สร้างไฟล์ <code>routes/api.php</code> มาตั้งแต่ต้น ให้รันคำสั่งนี้เพื่อเปิดระบบ API</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>php artisan install:api</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">1.3 สร้างฐานข้อมูล MySQL บน Laragon</h3>
+            <span class="step-badge">MySQL CLI</span>
+          </div>
+          <p class="step-desc">สร้างฐานข้อมูลชื่อ <code>library_db</code> ผ่าน HeidiSQL หรือรันคำสั่งนี้ใน Terminal</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">SQL</span>
+              <span class="code-file">Terminal / HeidiSQL</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>mysql -u root -e "CREATE DATABASE IF NOT EXISTS library_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">1.4 ตั้งค่าไฟล์ .env เชื่อมต่อฐานข้อมูล</h3>
+            <span class="step-badge">Config</span>
+          </div>
+          <p class="step-desc">แก้ไขไฟล์ <code>.env</code> ให้เชื่อมต่อ MySQL บน Laragon (รหัสผ่าน root ใน Laragon ปกติจะว่างเปล่า)</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">INI</span>
+              <span class="code-file">.env</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=library_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+# ตรวจสอบ Application URL ให้ตรงกับพอร์ต
+APP_URL=http://localhost:8000</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">1.5 ทดสอบรัน Web Server & ตรวจสถานะ Database</h3>
+            <span class="step-badge">Terminal</span>
+          </div>
+          <p class="step-desc">ตรวจสอบว่า Laravel เชื่อมต่อฐานข้อมูลได้สำเร็จ แล้วเปิด Server พอร์ต 8000</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code># ตรวจสอบสถานะการเชื่อมต่อ Database
+php artisan db:show
+
+# รันเซิร์ฟเวอร์
+php artisan serve --port=8000</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE 2: DATABASE -->
+      <section id="module-database" class="module-section">
+        <div class="section-header">
+          <div class="section-tag">STEP 2 • MIGRATIONS & MODELS</div>
+          <h2 class="section-title">02. ตั้งค่า Database & สร้าง 2 ตารางสัมพันธ์</h2>
+          <p class="section-desc">คำสั่งสร้าง Model, Migration 2 ตารางเชื่อมโยง Foreign Key (Categories & Books), Eloquent Relations, และ Seeders</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">2.1 สร้าง Model & Migration พร้อมกัน</h3>
+            <span class="step-badge">Artisan CLI</span>
+          </div>
+          <p class="step-desc">ใช้คำสั่งเดียวเพื่อสร้างทั้งไฟล์ Model และไฟล์ Migration สำหรับทั้งสองตาราง</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>php artisan make:model Category -m
+php artisan make:model Book -m</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">2.2 Migration: ตาราง Categories (หมวดหมู่/แคตตาล็อก)</h3>
+            <span class="step-badge">Migration</span>
+          </div>
+          <p class="step-desc">เปิดไฟล์ <code>database/migrations/xxxx_create_categories_table.php</code> แล้ววางโครงสร้างตาราง</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">database/migrations/xxxx_create_categories_table.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>&lt;?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('categories');
+    }
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">2.3 Migration: ตาราง Books (หนังสือในห้องสมุด)</h3>
+            <span class="step-badge">Migration</span>
+          </div>
+          <p class="step-desc">เปิดไฟล์ <code>database/migrations/xxxx_create_books_table.php</code> พร้อมเชื่อม Foreign Key ไปยังตาราง categories</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">database/migrations/xxxx_create_books_table.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>&lt;?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('books', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
+            $table->string('title');
+            $table->string('author');
+            $table->integer('published_year');
+            $table->boolean('is_available')->default(true);
+            $table->string('cover_image')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('books');
+    }
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">2.4 Model Eloquent: Category & Book Relations</h3>
+            <span class="step-badge">Models</span>
+          </div>
+          <p class="step-desc">กำหนด $fillable และ Relationship แบบ 1:N (Category hasMany Books, Book belongsTo Category)</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">app/Models/Category.php & Book.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>// File: app/Models/Category.php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Category extends Model
+{
+    use HasFactory;
+    protected $fillable = ['name', 'description'];
+
+    public function books()
+    {
+        return $this->hasMany(Book::class);
+    }
+}
+
+// File: app/Models/Book.php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Book extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'category_id',
+        'title',
+        'author',
+        'published_year',
+        'is_available',
+        'cover_image'
+    ];
+
+    protected $casts = [
+        'is_available' => 'boolean',
+        'published_year' => 'integer',
+        'category_id' => 'integer'
+    ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">2.5 Seeder ข้อมูลจำลองสำหรับทดสอบทันที</h3>
+            <span class="step-badge">Database Seeder</span>
+          </div>
+          <p class="step-desc">สร้างข้อมูลจำลองใน <code>database/seeders/DatabaseSeeder.php</code> แล้วสั่งรัน migrate:fresh --seed</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">database/seeders/DatabaseSeeder.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>&lt;?php
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Category;
+use App\Models\Book;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $catSoftware = Category::create([
+            'name' => 'Software Engineering',
+            'description' => 'หนังสือเกี่ยวกับการออกแบบและเขียนโปรแกรม'
+        ]);
+
+        $catDatabase = Category::create([
+            'name' => 'Database & Cloud',
+            'description' => 'หนังสือเกี่ยวกับระบบจัดการฐานข้อมูลและสถาปัตยกรรมคลาวด์'
+        ]);
+
+        Book::create([
+            'category_id' => $catSoftware->id,
+            'title' => 'Clean Code',
+            'author' => 'Robert C. Martin',
+            'published_year' => 2008,
+            'is_available' => true,
+            'cover_image' => null
+        ]);
+
+        Book::create([
+            'category_id' => $catSoftware->id,
+            'title' => 'Refactoring',
+            'author' => 'Martin Fowler',
+            'published_year' => 1999,
+            'is_available' => true,
+            'cover_image' => null
+        ]);
+    }
+}
+
+// คำสั่งรันใน Terminal:
+// php artisan migrate:fresh --seed</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE 3: BACKEND API -->
+      <section id="module-api" class="module-section">
+        <div class="section-header">
+          <div class="section-tag">STEP 3 • API & FILE UPLOAD</div>
+          <h2 class="section-title">03. Backend RESTful API & File Upload</h2>
+          <p class="section-desc">การสร้าง API Routes, Controllers สำหรับ 2 ตาราง, การจัดการอัปโหลดรูปภาพปก และ Status Code 200, 201, 404</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">3.1 สร้าง Controllers สำหรับ API</h3>
+            <span class="step-badge">Artisan CLI</span>
+          </div>
+          <p class="step-desc">สร้าง Controller ภายใต้โฟลเดอร์ <code>Api</code> พร้อมตัวเลือก <code>--api</code> เพื่อให้ได้เมธอดมาตรฐานครบครัน</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>php artisan make:controller Api/CategoryController --api
+php artisan make:controller Api/BookController --api</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">3.2 กำหนด Routes ใน routes/api.php</h3>
+            <span class="step-badge">Routes</span>
+          </div>
+          <p class="step-desc">ลงทะเบียน Resource Routes สำหรับ Categories และ Books พร้อมรองรับ Endpoints ครบชุด</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">routes/api.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>&lt;?php
+// File: routes/api.php
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\BookController;
+
+// RESTful API Resource Routes
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('books', BookController::class);
+
+/*
+ * Endpoints ที่ได้:
+ * GET    /api/categories         -> ดึงหมวดหมู่ทั้งหมด (200 OK)
+ * POST   /api/categories         -> เพิ่มหมวดหมู่ใหม่ (201 Created)
+ *
+ * GET    /api/books              -> ดึงหนังสือทั้งหมด (200 OK)
+ * GET    /api/books/{id}         -> ดึงเล่มเดียว (200 OK หรือ 404 Not Found)
+ * POST   /api/books              -> เพิ่มใหม่พร้อมอัปโหลดปก (201 Created)
+ * PUT    /api/books/{id}         -> แก้ไขข้อมูลหนังสือ (200 OK)
+ * DELETE /api/books/{id}         -> ลบหนังสือ (200 OK)
+ */</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">3.3 CategoryController: ดึงและเพิ่มหมวดหมู่</h3>
+            <span class="step-badge">Controller</span>
+          </div>
+          <p class="step-desc">Controller จัดการหมวดหมู่เพื่อส่งข้อมูลไปใส่ Dropdown ในหน้าบ้าน</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">app/Http/Controllers/Api/CategoryController.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>&lt;?php
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use Illuminate\Http\Request;
+
+class CategoryController extends Controller
+{
+    public function index()
+    {
+        return response()->json(Category::all(), 200);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string'
+        ]);
+
+        $category = Category::create($validated);
+        return response()->json($category, 201);
+    }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">3.4 BookController: CRUD & File Upload ปกหนังสือ</h3>
+            <span class="step-badge">Controller</span>
+          </div>
+          <p class="step-desc">Controller จัดการหนังสือ รองรับการอัปโหลดไฟล์รูปภาพลง storage และคืนค่า Status Code ตามข้อกำหนด (200, 201, 404)</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">app/Http/Controllers/Api/BookController.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>&lt;?php
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Book;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class BookController extends Controller
+{
+    public function index()
+    {
+        $books = Book::with('category')->latest()->get()->map(function ($book) {
+            $book->cover_url = $book->cover_image ? asset('storage/' . $book->cover_image) : null;
+            return $book;
+        });
+
+        return response()->json($books, 200);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'category_id'    => 'required|exists:categories,id',
+            'title'          => 'required|string|max:255',
+            'author'         => 'required|string|max:255',
+            'published_year' => 'required|integer|min:1000|max:' . (date('Y') + 1),
+            'is_available'   => 'nullable|boolean',
+            'cover_image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ]);
+
+        $validated['is_available'] = filter_var($request->input('is_available', true), FILTER_VALIDATE_BOOLEAN);
+
+        // จัดการอัปโหลดไฟล์ปกหนังสือ
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $validated['cover_image'] = $path;
+        }
+
+        $book = Book::create($validated);
+        $book->load('category');
+        $book->cover_url = $book->cover_image ? asset('storage/' . $book->cover_image) : null;
+
+        return response()->json($book, 201);
+    }
+
+    public function show(string $id)
+    {
+        $book = Book::with('category')->find($id);
+        if (!$book) {
+            return response()->json(['message' => 'ไม่พบข้อมูลหนังสือที่ต้องการ'], 404);
+        }
+
+        $book->cover_url = $book->cover_image ? asset('storage/' . $book->cover_image) : null;
+        return response()->json($book, 200);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $book = Book::find($id);
+        if (!$book) {
+            return response()->json(['message' => 'ไม่พบข้อมูลหนังสือที่ต้องการแก้ไข'], 404);
+        }
+
+        $validated = $request->validate([
+            'category_id'    => 'sometimes|required|exists:categories,id',
+            'title'          => 'sometimes|required|string|max:255',
+            'author'         => 'sometimes|required|string|max:255',
+            'published_year' => 'sometimes|required|integer|min:1000',
+            'is_available'   => 'nullable|boolean',
+            'cover_image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ]);
+
+        if ($request->has('is_available')) {
+            $validated['is_available'] = filter_var($request->input('is_available'), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // ถ้ามีการส่งรูปใหม่มา ให้ลบรูปเดิมแล้วบันทึกรูปใหม่
+        if ($request->hasFile('cover_image')) {
+            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $validated['cover_image'] = $path;
+        }
+
+        $book->update($validated);
+        $book->load('category');
+        $book->cover_url = $book->cover_image ? asset('storage/' . $book->cover_image) : null;
+
+        return response()->json($book, 200);
+    }
+
+    public function destroy(string $id)
+    {
+        $book = Book::find($id);
+        if (!$book) {
+            return response()->json(['message' => 'ไม่พบข้อมูลหนังสือที่ต้องการลบ'], 404);
+        }
+
+        // ลบรูปภาพออกจาก Storage
+        if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+            Storage::disk('public')->delete($book->cover_image);
+        }
+
+        $book->delete();
+        return response()->json(['message' => 'ลบข้อมูลหนังสือสำเร็จ'], 200);
+    }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">3.5 สร้าง Storage Symlink สำหรับเข้าถึงรูปภาพ</h3>
+            <span class="step-badge">Artisan CLI</span>
+          </div>
+          <p class="step-desc">คำสั่งสำคัญเพื่อให้เบราว์เซอร์สามารถเปิดดูรูปภาพที่อัปโหลดไว้ใน <code>storage/app/public</code> ได้ผ่าน URL <code>http://localhost:8000/storage/covers/...</code></p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>php artisan storage:link</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE 4: FRONTEND JS -->
+      <section id="module-frontend" class="module-section">
+        <div class="section-header">
+          <div class="section-tag">STEP 4 • JAVASCRIPT & FETCH</div>
+          <h2 class="section-title">04. Frontend JavaScript Integration</h2>
+          <p class="section-desc">สูตรโค้ด Vanilla JS (Native Fetch API) ผูกเข้ากับ HTML/CSS ของอาจารย์ รองรับ CRUD ครบวงจร, FormData, และการแก้บั๊ก PUT Multipart</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">4.1 ตั้งค่า API Base URL & ดึงหมวดหมู่ใส่ Dropdown</h3>
+            <span class="step-badge">JavaScript</span>
+          </div>
+          <p class="step-desc">ดึงข้อมูลหมวดหมู่จาก <code>GET /api/categories</code> มาใส่ในแท็ก <code>&lt;select&gt;</code></p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">JAVASCRIPT</span>
+              <span class="code-file">frontend/script.js</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>const API_BASE = 'http://localhost:8000/api';
+
+// ดึงหมวดหมู่มาใส่ใน Select dropdown
+async function loadCategories() {
+  try {
+    const res = await fetch(`${API_BASE}/categories`);
+    const categories = await res.json();
+    
+    const selectEl = document.getElementById('category_id');
+    if (!selectEl) return;
+    
+    selectEl.innerHTML = '&lt;option value=""&gt;-- กรุณาเลือกหมวดหมู่ --&lt;/option&gt;';
+    categories.forEach(cat => {
+      selectEl.innerHTML += `&lt;option value="${cat.id}"&gt;${cat.name}&lt;/option&gt;`;
+    });
+  } catch (error) {
+    console.error('Error loading categories:', error);
+    alert('ไม่สามารถโหลดรายการหมวดหมู่ได้');
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">4.2 ดึงรายการหนังสือทั้งหมดมาแสดงในตาราง (GET /api/books)</h3>
+            <span class="step-badge">JavaScript</span>
+          </div>
+          <p class="step-desc">ดึงข้อมูลและ Render ลง <code>&lt;tbody&gt;</code> พร้อมรูปภาพปก สถานะยืม และปุ่มแก้ไข/ลบ</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">JAVASCRIPT</span>
+              <span class="code-file">frontend/script.js</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>async function loadBooks() {
+  try {
+    const res = await fetch(`${API_BASE}/books`);
+    const books = await res.json();
+    
+    const tbody = document.getElementById('bookTableBody');
+    if (!tbody) return;
+    
+    if (books.length === 0) {
+      tbody.innerHTML = '&lt;tr&gt;&lt;td colspan="7" style="text-align:center;"&gt;ไม่พบข้อมูลหนังสือ&lt;/td&gt;&lt;/tr&gt;';
+      return;
+    }
+    
+    tbody.innerHTML = books.map(b => `
+      &lt;tr&gt;
+        &lt;td&gt;${b.id}&lt;/td&gt;
+        &lt;td&gt;
+          ${b.cover_url 
+            ? `&lt;img src="${b.cover_url}" width="50" height="70" style="object-fit:cover; border-radius:4px;"&gt;` 
+            : '&lt;span style="color:#888;"&gt;ไม่มีปก&lt;/span&gt;'}
+        &lt;/td&gt;
+        &lt;td&gt;&lt;strong&gt;${b.title}&lt;/strong&gt;&lt;/td&gt;
+        &lt;td&gt;${b.author}&lt;/td&gt;
+        &lt;td&gt;${b.category ? b.category.name : '-'}&lt;/td&gt;
+        &lt;td&gt;${b.published_year}&lt;/td&gt;
+        &lt;td&gt;
+          &lt;span class="badge ${b.is_available ? 'badge-success' : 'badge-danger'}"&gt;
+            ${b.is_available ? 'พร้อมยืม' : 'ถูกยืมแล้ว'}
+          &lt;/span&gt;
+        &lt;/td&gt;
+        &lt;td&gt;
+          &lt;button onclick="openEditModal(${b.id})" class="btn btn-sm btn-edit"&gt;แก้ไข&lt;/button&gt;
+          &lt;button onclick="deleteBook(${b.id})" class="btn btn-sm btn-delete"&gt;ลบ&lt;/button&gt;
+        &lt;/td&gt;
+      &lt;/tr&gt;
+    `).join('');
+  } catch (error) {
+    console.error('Error loading books:', error);
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">4.3 บันทึกข้อมูลหนังสือใหม่ (POST /api/books)</h3>
+            <span class="step-badge">JavaScript</span>
+          </div>
+          <p class="step-desc">ดึงค่าจากฟอร์มผ่าน <code>FormData</code> เพื่อส่งข้อมูลและไฟล์รูปภาพไปยัง API</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">JAVASCRIPT</span>
+              <span class="code-file">frontend/script.js</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>async function handleCreateBook(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  // จัดการค่า Checkbox is_available
+  const isAvailableCheckbox = form.querySelector('[name="is_available"]');
+  formData.set('is_available', isAvailableCheckbox && isAvailableCheckbox.checked ? '1' : '0');
+
+  try {
+    const res = await fetch(`${API_BASE}/books`, {
+      method: 'POST',
+      body: formData // ห้ามใส่ Content-Type header เมื่อใช้ FormData
+    });
+
+    if (res.status === 201) {
+      alert('เพิ่มหนังสือสำเร็จ!');
+      form.reset();
+      closeModal();
+      loadBooks();
+    } else {
+      const errData = await res.json();
+      alert('เกิดข้อผิดพลาด: ' + (errData.message || JSON.stringify(errData.errors)));
+    }
+  } catch (error) {
+    console.error('Create error:', error);
+    alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">4.4 แก้ไขข้อมูลหนังสือ (เทคนิค _method=PUT สำคัญมาก)</h3>
+            <span class="step-badge">Laravel Pro-Tip</span>
+          </div>
+          <p class="step-desc">PHP มีข้อจำกัดไม่อ่านไฟล์ในคำขอ <code>PUT</code> ดังนั้นต้องส่งเป็น <code>POST</code> แล้วแนบ <code>_method=PUT</code></p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">JAVASCRIPT</span>
+              <span class="code-file">frontend/script.js</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>async function handleUpdateBook(event, bookId) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  // [สำคัญที่สุด] หลอก Laravel ให้ทราบว่าเป็นคำขอ PUT
+  formData.append('_method', 'PUT');
+  
+  const isAvailableCheckbox = form.querySelector('[name="is_available"]');
+  formData.set('is_available', isAvailableCheckbox && isAvailableCheckbox.checked ? '1' : '0');
+
+  try {
+    // ส่งด้วย method POST เสมอเพื่อให้อัปโหลดไฟล์สำเร็จ
+    const res = await fetch(`${API_BASE}/books/${bookId}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (res.status === 200) {
+      alert('แก้ไขข้อมูลสำเร็จ!');
+      closeModal();
+      loadBooks();
+    } else {
+      const errData = await res.json();
+      alert('เกิดข้อผิดพลาด: ' + (errData.message || JSON.stringify(errData.errors)));
+    }
+  } catch (error) {
+    console.error('Update error:', error);
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">4.5 ลบข้อมูลหนังสือ (DELETE /api/books/:id)</h3>
+            <span class="step-badge">JavaScript</span>
+          </div>
+          <p class="step-desc">แสดง Confirm Dialog แล้วส่งคำขอลบไปยัง Backend</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">JAVASCRIPT</span>
+              <span class="code-file">frontend/script.js</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>async function deleteBook(id) {
+  if (!confirm(`คุณต้องการลบหนังสือรหัส ${id} ใช่หรือไม่?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/books/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (res.status === 200) {
+      alert('ลบหนังสือสำเร็จ');
+      loadBooks();
+    } else if (res.status === 404) {
+      alert('ไม่พบข้อมูลหนังสือเล่มนี้ในระบบ');
+    } else {
+      alert('ไม่สามารถลบข้อมูลได้');
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE 5: SWAGGER & OPENAPI -->
+      <section id="module-openapi" class="module-section">
+        <div class="section-header">
+          <div class="section-tag">STEP 5 • SWAGGER & CODE GEN</div>
+          <h2 class="section-title">05. OpenAPI / Swagger & Postman Automation</h2>
+          <p class="section-desc">วิธีแปลง Swagger / OpenAPI Document เป็นโค้ด Backend & Frontend โดยอัตโนมัติใน 1-2 นาทีโดยไม่ต้องใช้ AI</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">5.1 เทคนิคที่ 1: Postman Import & Code Snippet Generator (เร็วสุด 30 วินาที)</h3>
+            <span class="step-badge">Postman GUI</span>
+          </div>
+          <p class="step-desc">วิธีที่ง่ายที่สุดในห้องสอบ: นำเข้าไฟล์ Swagger สู่ Postman แล้วกดดูโค้ดสำเร็จรูปได้ทุกภาษา</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">MARKDOWN</span>
+              <span class="code-file">Postman Guide</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>1. เปิดโปรแกรม Postman -> กดปุ่ม 'Import' ที่มุมซ้ายบน
+2. ลากไฟล์ swagger.json หรือวาง URL ของ Swagger จากอาจารย์ลงไป
+3. Postman จะสร้าง Collection ที่รวมทุก Endpoints (GET, POST, PUT, DELETE) พร้อม Body จำลองให้อัตโนมัติ
+4. คลิกที่ Request ตัวที่ต้องการ (เช่น POST /books)
+5. มองที่แถบเครื่องมือด้านขวาสุด คลิกที่ไอคอนโค้ด `</>` (Code Snippet)
+6. เลือกภาษาเป็น 'JavaScript - Fetch' หรือ 'JavaScript - Axios'
+7. กดปุ่ม Copy ไปวางในไฟล์ JS ของเราได้ทันที!</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">5.2 เทคนิคที่ 2: ใช้ Swagger Editor ในการ Gen Server / Client</h3>
+            <span class="step-badge">Web Tool</span>
+          </div>
+          <p class="step-desc">เข้าเว็บ Swagger Editor นำเข้า JSON/YAML แล้วสั่ง Export เป็นโค้ด Laravel หรือ JavaScript</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">MARKDOWN</span>
+              <span class="code-file">Swagger Editor Guide</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>1. เข้าเว็บไซต์ https://editor.swagger.io
+2. ไปที่เมนู File -> Import File หรือ Paste swagger.json ของอาจารย์
+3. เมนู 'Generate Server' -> เลือก 'php-laravel'
+   -> จะได้ไฟล์ Zip โครงสร้าง Controller, Model, และ Routes สำหรับ Laravel ทันที!
+4. เมนู 'Generate Client' -> เลือก 'javascript' หรือ 'typescript-fetch'
+   -> จะได้ไฟล์ฟังก์ชันเรียก API สำเร็จรูปโดยไม่ต้องเขียนคำขอเอง</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">5.3 เทคนิคที่ 3: รัน CLI ผ่าน Terminal (OpenAPI Generator CLI)</h3>
+            <span class="step-badge">CLI Generator</span>
+          </div>
+          <p class="step-desc">คำสั่ง Terminal รวดเร็วสำหรับนักพัฒนา โดยใช้ npx รัน openapi-generator ไม่ต้องลงโปรแกรมล่วงหน้า</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code># 1. คำสั่ง Gen โครงสร้าง Backend สำหรับ Laravel
+npx @openapitools/openapi-generator-cli generate \
+  -i swagger.json \
+  -g php-laravel \
+  -o ./generated-laravel-api
+
+# 2. คำสั่ง Gen JavaScript / TypeScript Fetch Client สำหรับหน้าบ้าน
+npx @openapitools/openapi-generator-cli generate \
+  -i swagger.json \
+  -g typescript-fetch \
+  -o ./generated-frontend-client</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE 6: TROUBLESHOOTING & CHECKLIST -->
+      <section id="module-troubleshooting" class="module-section">
+        <div class="section-header">
+          <div class="section-tag">STEP 6 • PITFALLS & CHECKLIST</div>
+          <h2 class="section-title">06. กับดักยอดฮิต & เช็กลิสต์ตรวจผลสอบ</h2>
+          <p class="section-desc">วิธีแก้บั๊กฉุกเฉินที่มักเจอในห้องสอบ (CORS, Storage 404, PHP PUT Multipart, CSRF 419) พร้อมเช็กลิสต์ก่อนส่งงาน</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">6.1 Trap 1: ติดปัญหา CORS Policy (หน้าบ้านยิง API ไม่เข้า)</h3>
+            <span class="step-badge">CORS Fix</span>
+          </div>
+          <p class="step-desc">เมื่อหน้าบ้านเปิดผ่านเบราว์เซอร์แล้วยิงหา API ไม่ได้ ติด CORS</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">PHP</span>
+              <span class="code-file">config/cors.php</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code># สำหรับ Laravel 11 ถ้ายังไม่มี config/cors.php ให้ดึงออกมาด้วยคำสั่ง:
+php artisan config:publish cors
+
+# จากนั้นเปิดไฟล์ config/cors.php และตั้งค่าดังนี้:
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => ['*'],
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => false,
+];
+
+# รันคำสั่งเคลียร์แคช:
+php artisan config:clear</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">6.2 Trap 2: รูปอัปโหลดติด แต่เปิดดูแล้วขึ้น 404 Not Found</h3>
+            <span class="step-badge">Storage Fix</span>
+          </div>
+          <p class="step-desc">แก้ปัญหา Symlink ขาด หรือรูปภาพเปิดไม่ขึ้น</p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">BASH</span>
+              <span class="code-file">Terminal Command</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code># 1. ลบโฟลเดอร์หรือชอร์ตคัต public/storage ออกก่อน
+# 2. รันคำสั่งสร้าง Symlink ใหม่:
+php artisan storage:link
+
+# 3. ตรวจสอบใน .env ให้ APP_URL=http://localhost:8000</code></pre>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">6.3 Trap 3: ปัญหา 419 CSRF Token Mismatch</h3>
+            <span class="step-badge">Route Fix</span>
+          </div>
+          <p class="step-desc">ตรวจสอบว่า URL ขึ้นต้นด้วย <code>/api/</code> หรือไม่ เพราะ Laravel จะปิดการตรวจ CSRF เฉพาะใน <code>routes/api.php</code></p>
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span class="code-lang">JAVASCRIPT</span>
+              <span class="code-file">API URL Tip</span>
+              <button class="btn-copy">📋 คัดลอก</button>
+            </div>
+            <pre><code>// ถูกต้อง:
+const url = 'http://localhost:8000/api/books';
+
+// ผิด (จะติด 419 CSRF):
+const url = 'http://localhost:8000/books';</code></pre>
+          </div>
+        </div>
+
+        <!-- 10-Item Exam Checklist -->
+        <div class="step-card">
+          <div class="step-card-header">
+            <h3 class="step-card-title">✅ เช็กลิสต์ 10 ข้อยืนยันความพร้อมก่อนส่งข้อสอบ</h3>
+            <span class="step-badge">Pre-Submission</span>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk1" class="checklist-checkbox">
+            <label for="chk1">1. ฐานข้อมูลมีครบทั้ง 2 ตาราง (Categories & Books) มี Foreign Key เชื่อมโยงถูกต้อง</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk2" class="checklist-checkbox">
+            <label for="chk2">2. ทดลองรัน <code>php artisan migrate:fresh --seed</code> แล้วข้อมูล mock ปรากฏครบถ้วน</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk3" class="checklist-checkbox">
+            <label for="chk3">3. รันคำสั่ง <code>php artisan storage:link</code> แล้ว</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk4" class="checklist-checkbox">
+            <label for="chk4">4. ทดสอบ GET /api/books ได้สถานะ 200 OK และมีรายการหนังสือแสดง</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk5" class="checklist-checkbox">
+            <label for="chk5">5. ทดสอบ GET /api/books/999999 (ไอดีไม่มีจริง) คืนค่าสถานะ 404 Not Found</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk6" class="checklist-checkbox">
+            <label for="chk6">6. หน้าบ้านสามารถกดเลือกหมวดหมู่จาก Dropdown ได้</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk7" class="checklist-checkbox">
+            <label for="chk7">7. สามารถอัปโหลดไฟล์รูปภาพปกหนังสือใหม่ และรูปแสดงขึ้นในตารางได้จริง</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk8" class="checklist-checkbox">
+            <label for="chk8">8. การแก้ไขข้อมูลหนังสือ (PUT) ทำงานได้ปกติ โดยรูปภาพเก่าไม่หายหากไม่ได้เลือกรูปใหม่</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk9" class="checklist-checkbox">
+            <label for="chk9">9. การลบหนังสือ (DELETE) มีปุ่มยืนยัน confirm() และลบข้อมูลออกจากฐานข้อมูลจริง</label>
+          </div>
+          <div class="checklist-item">
+            <input type="checkbox" id="chk10" class="checklist-checkbox">
+            <label for="chk10">10. ไม่มี Error สีแดงค้างอยู่ใน Console ของ Browser</label>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/snippets.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
