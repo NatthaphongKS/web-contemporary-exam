@@ -3,7 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Book } from "@/types/book";
-import { Book as BookIcon, Calendar, User, CheckCircle2, XCircle, Edit3, Trash2, ArrowRightLeft } from "lucide-react";
+import {
+  Book as BookIcon,
+  Calendar,
+  User,
+  CheckCircle2,
+  XCircle,
+  Edit3,
+  Trash2,
+  ArrowRightLeft,
+  UserCheck,
+} from "lucide-react";
 
 interface BookCardProps {
   book: Book;
@@ -79,6 +89,14 @@ export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardPro
               <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span>ปีที่พิมพ์: {book.publishedYear}</span>
             </div>
+
+            {/* Borrower name if borrowed */}
+            {!book.isAvailable && book.borrowerName && (
+              <div className="flex items-center gap-1.5 pt-1 text-amber-700 font-medium truncate">
+                <UserCheck className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                <span className="truncate">ผู้ยืม: {book.borrowerName}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -89,8 +107,8 @@ export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardPro
             onClick={() => onToggleStatus(book.id)}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-medium transition-colors ${
               book.isAvailable
-                ? "text-amber-700 bg-amber-50 hover:bg-amber-100"
-                : "text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                ? "text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+                : "text-amber-800 bg-amber-100 hover:bg-amber-200"
             }`}
             title="สลับสถานะการยืม/คืน"
           >

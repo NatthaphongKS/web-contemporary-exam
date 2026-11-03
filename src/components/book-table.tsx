@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Book } from "@/types/book";
-import { Book as BookIcon, CheckCircle2, XCircle, Edit3, Trash2, ArrowRightLeft, ExternalLink } from "lucide-react";
+import { Book as BookIcon, CheckCircle2, XCircle, Edit3, Trash2, ArrowRightLeft, ExternalLink, UserCheck } from "lucide-react";
 
 interface BookTableProps {
   books: Book[];
@@ -37,9 +37,10 @@ export function BookTable({
             <th className="px-4 py-3.5 w-20">หน้าปก</th>
             <th className="px-4 py-3.5">ชื่อหนังสือ</th>
             <th className="px-4 py-3.5">ผู้แต่ง</th>
-            <th className="px-4 py-3.5 text-center w-28">ปีที่พิมพ์</th>
+            <th className="px-4 py-3.5 text-center w-24">ปีที่พิมพ์</th>
             <th className="px-4 py-3.5 text-center w-36">สถานะการยืม</th>
-            <th className="px-4 py-3.5 text-right w-44">การจัดการ</th>
+            <th className="px-4 py-3.5 w-36">ผู้ยืมปัจจุบัน</th>
+            <th className="px-4 py-3.5 text-right w-36">การจัดการ</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -110,6 +111,18 @@ export function BookTable({
                     </>
                   )}
                 </span>
+              </td>
+
+              {/* Borrower Name */}
+              <td className="px-4 py-3 text-xs">
+                {book.borrowerName ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                    <UserCheck className="w-3 h-3 text-amber-600" />
+                    <span>{book.borrowerName}</span>
+                  </span>
+                ) : (
+                  <span className="text-slate-400">-</span>
+                )}
               </td>
 
               {/* Actions */}

@@ -11,11 +11,12 @@ import {
   AlertTriangle,
   BookmarkCheck,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 export default function StudyGuidePage() {
   const [activeTab, setActiveTab] = useState<
-    "setup" | "model" | "api" | "upload" | "frontend" | "curl" | "pitfalls"
+    "setup" | "model" | "api" | "upload" | "frontend" | "curl" | "pitfalls" | "relations"
   >("setup");
 
   return (
@@ -45,8 +46,9 @@ export default function StudyGuidePage() {
           { id: "api", label: "3. RESTful API Routes", icon: FileCode },
           { id: "upload", label: "4. File Upload API", icon: Upload },
           { id: "frontend", label: "5. Frontend & Optimistic UI", icon: Globe },
-          { id: "curl", label: "6. cURL Test Commands", icon: BookmarkCheck },
-          { id: "pitfalls", label: "7. กับดัก & ข้อควรระวัง", icon: AlertTriangle },
+          { id: "relations", label: "6. 2 ตารางสัมพันธ์ (Users & Books)", icon: Users },
+          { id: "curl", label: "7. cURL Test Commands", icon: BookmarkCheck },
+          { id: "pitfalls", label: "8. กับดัก & ข้อควรระวัง", icon: AlertTriangle },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1043,7 +1045,167 @@ const handleToggleStatus = async (id: number) => {
         </section>
       )}
 
-      {/* Tab 6: cURL Test Commands */}
+      {/* Tab 6: 2-Table Relations (Users & Books) */}
+      {activeTab === "relations" && (
+        <section className="py-6 space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">10</span>
+              โค้ดจริง: Model ผู้ใช้ (src/types/user.ts)
+            </h2>
+            <p className="text-sm text-slate-600">
+              กำหนด User Model สำหรับเชื่อมโยงกับ Books (1:N Relation):
+            </p>
+
+            <CodeBlock
+              title="src/types/user.ts (โค้ดจริงในโปรเจกต์)"
+              language="typescript"
+              code={`export interface User {
+  id: number;                   // รหัสประจำตัวผู้ใช้ (Number)
+  name: string;                // ชื่อ-นามสกุล (String)
+  email: string;               // อีเมล (String)
+  role: "student" | "teacher" | "member"; // บทบาท/ประเภทผู้ใช้
+  avatarUrl?: string | null;    // รูปโปรไฟล์ (Optional)
+  borrowedBooksCount?: number;  // จำนวนหนังสือที่ยืมอยู่ปัจจุบัน (Computed field)
+  createdAt?: string;           // วันที่สร้างบัญชี
+}
+
+export type CreateUserDto = {
+  name: string;
+  email: string;
+  role: "student" | "teacher" | "member";
+  avatarUrl?: string | null;
+};
+
+export type UpdateUserDto = Partial<CreateUserDto>;`}
+            />
+
+            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">11</span>
+              โค้ดจริง: In-Memory Users Store (src/lib/users-store.ts)
+            </h2>
+            <p className="text-sm text-slate-600">
+              จัดการผู้ใช้ พร้อมคำนวณจำนวนหนังสือที่ถือครองอยู่แบบ dynamic:
+            </p>
+
+            <CodeBlock
+              title="src/lib/users-store.ts (โค้ดจริงในโปรเจกต์)"
+              language="typescript"
+              code={`import { User, CreateUserDto, UpdateUserDto } from "@/types/user";
+
+const initialUsers: User[] = [
+  { id: 1, name: "สมชาย ใจดี", email: "somchai.j@example.com", role: "student", createdAt: "2026-01-10T09:00:00Z" },
+  { id: 2, name: "อลิสา มั่นคง", email: "alisa.m@example.com", role: "student", createdAt: "2026-01-12T11:30:00Z" },
+  { id: 3, name: "Robert C. Martin", email: "unclebob@cleancode.org", role: "teacher", createdAt: "2026-01-05T08:00:00Z" },
+  { id: 4, name: "Dan Abramov", email: "dan@overreacted.io", role: "member", createdAt: "2026-01-20T14:00:00Z" },
+];
+
+declare global {
+  var __libraryUsersStore: User[] | undefined;
+  var __libraryNextUserId: number | undefined;
+}
+
+if (!globalThis.__libraryUsersStore) {
+  globalThis.__libraryUsersStore = [...initialUsers];
+  globalThis.__libraryNextUserId = 5;
+}
+
+export function getAllUsers(): User[] {
+  const users = globalThis.__libraryUsersStore || [];
+  const books = globalThis.__libraryBooksStore || [];
+
+  return users.map((u) => ({
+    ...u,
+    borrowedBooksCount: books.filter((b) => b.userId === u.id).length,
+  }));
+}
+
+export function getUserById(id: number): User | undefined {
+  const user = (globalThis.__libraryUsersStore || []).find((u) => u.id === id);
+  if (!user) return undefined;
+
+  const books = globalThis.__libraryBooksStore || [];
+  return {
+    ...user,
+    borrowedBooksCount: books.filter((b) => b.userId === user.id).length,
+  };
+}
+
+export function createUser(dto: CreateUserDto): User {
+  const nextId = globalThis.__libraryNextUserId || 5;
+  globalThis.__libraryNextUserId = nextId + 1;
+
+  const newUser: User = {
+    id: nextId,
+    name: dto.name.trim(),
+    email: dto.email.trim(),
+    role: dto.role || "student",
+    borrowedBooksCount: 0,
+    createdAt: new Date().toISOString(),
+  };
+
+  globalThis.__libraryUsersStore = [...(globalThis.__libraryUsersStore || []), newUser];
+  return newUser;
+}
+
+export function deleteUser(id: number): boolean {
+  const users = globalThis.__libraryUsersStore || [];
+  const index = users.findIndex((u) => u.id === id);
+  if (index === -1) return false;
+
+  // คืนหนังสือที่ผู้ใช้คนนี้ยืมอยู่ทั้งหมด (Cascade)
+  if (globalThis.__libraryBooksStore) {
+    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.map((book) =>
+      book.userId === id ? { ...book, userId: null, isAvailable: true, borrowedAt: null } : book
+    );
+  }
+
+  users.splice(index, 1);
+  globalThis.__libraryUsersStore = [...users];
+  return true;
+}`}
+            />
+
+            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">12</span>
+              โค้ดจริง: Route Handlers ยืม & คืนหนังสือ
+            </h2>
+            <p className="text-sm text-slate-600">
+              สร้าง Route Handler สำหรับยืมหนังสือให้ผู้ใช้ (`/api/books/:id/borrow`) และคืนหนังสือ (`/api/books/:id/return`):
+            </p>
+
+            <CodeBlock
+              title="src/app/api/books/[id]/borrow/route.ts & return/route.ts"
+              language="typescript"
+              code={`// POST /api/books/:id/borrow
+// Body: { userId: number }
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const body = await request.json();
+  const result = borrowBook(Number(id), Number(body.userId));
+
+  if (!result.success) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
+  }
+  return NextResponse.json({ message: "ยืมหนังสือสำเร็จ", book: result.book }, { status: 200 });
+}
+
+// POST /api/books/:id/return
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const result = returnBook(Number(id));
+
+  if (!result.success) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
+  }
+  return NextResponse.json({ message: "คืนหนังสือสำเร็จ", book: result.book }, { status: 200 });
+}`}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Tab 7: cURL Test Commands */}
       {activeTab === "curl" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
@@ -1106,6 +1268,32 @@ const handleToggleStatus = async (id: number) => {
               title="7. อัปโหลดไฟล์รูปภาพ (POST /api/upload -> 201 Created)"
               language="bash"
               code="curl -X POST http://localhost:3000/api/upload -F 'file=@/path/to/image.png'"
+            />
+
+            <CodeBlock
+              title="8. ดึงรายชื่อผู้ใช้ทั้งหมด (GET /api/users -> 200 OK)"
+              language="bash"
+              code="curl -X GET http://localhost:3000/api/users"
+            />
+
+            <CodeBlock
+              title="9. ดึงหนังสือที่ผู้ใช้คนนี้ยืมอยู่ (GET /api/users/1/books -> 200 OK)"
+              language="bash"
+              code="curl -X GET http://localhost:3000/api/users/1/books"
+            />
+
+            <CodeBlock
+              title="10. ทำรายการยืมหนังสือให้ผู้ใช้ (POST /api/books/1/borrow -> 200 OK)"
+              language="bash"
+              code={`curl -X POST http://localhost:3000/api/books/1/borrow \\
+  -H "Content-Type: application/json" \\
+  -d '{"userId": 1}'`}
+            />
+
+            <CodeBlock
+              title="11. ทำรายการคืนหนังสือเข้าห้องสมุด (POST /api/books/1/return -> 200 OK)"
+              language="bash"
+              code="curl -X POST http://localhost:3000/api/books/1/return"
             />
           </div>
         </section>

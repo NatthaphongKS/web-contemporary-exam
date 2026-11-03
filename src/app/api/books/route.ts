@@ -12,13 +12,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || undefined;
     const isAvailableParam = searchParams.get("isAvailable");
+    const userIdParam = searchParams.get("userId");
     
     let isAvailable: boolean | undefined = undefined;
     if (isAvailableParam !== null) {
       isAvailable = isAvailableParam === "true";
     }
 
-    const books = getAllBooks({ search, isAvailable });
+    const userId = userIdParam ? Number(userIdParam) : undefined;
+
+    const books = getAllBooks({ search, isAvailable, userId });
     return NextResponse.json(books, { status: 200 });
   } catch (error) {
     console.error("GET /api/books error:", error);
@@ -68,6 +71,7 @@ export async function POST(request: Request) {
       publishedYear,
       isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : true,
       coverUrl: body.coverUrl || null,
+      userId: body.userId ? Number(body.userId) : null,
     };
 
     const newBook = createBook(dto);
