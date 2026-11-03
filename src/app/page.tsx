@@ -30,9 +30,11 @@ export default function LibraryDashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookToEdit, setBookToEdit] = useState<Book | null>(null);
 
-  // Fetch books from API
-  const fetchBooks = useCallback(async () => {
-    setIsLoading(true);
+  // Fetch books from API (รองรับ isBackground เพื่อดึงข้อมูลเงียบๆ โดยไม่เซ็ต loading)
+  const fetchBooks = useCallback(async (isBackground = false) => {
+    if (!isBackground) {
+      setIsLoading(true);
+    }
     try {
       const params = new URLSearchParams();
       if (search.trim()) params.append("search", search.trim());
@@ -52,7 +54,9 @@ export default function LibraryDashboardPage() {
         status: 500,
       });
     } finally {
-      setIsLoading(false);
+      if (!isBackground) {
+        setIsLoading(false);
+      }
     }
   }, [search, filterAvailable, toast]);
 
@@ -60,12 +64,19 @@ export default function LibraryDashboardPage() {
     fetchBooks();
   }, [fetchBooks]);
 
-  // Toggle Borrow / Return Status
+  // Toggle Borrow / Return Status (Optimistic Update: แก้ไขใน Array ทันที)
   const handleToggleStatus = async (id: number) => {
     const book = books.find((b) => b.id === id);
     if (!book) return;
 
-    const newStatus = !book.isAvailable;
+    const previousStatus = book.isAvailable;
+    const newStatus = !previousStatus;
+
+    // 1. Optimistic Update: อัปเดต state ของหนังสือเล่มนั้นใน Array ทันที หน้าจอไม่กระตุก ไม่เลื่อน
+    setBooks((prevBooks) =>
+      prevBooks.map((b) => (b.id === id ? { ...b, isAvailable: newStatus } : b))
+    );
+
     try {
       const res = await fetch(`/api/books/${id}`, {
         method: "PUT",
@@ -83,8 +94,14 @@ export default function LibraryDashboardPage() {
         status: 200,
       });
 
-      fetchBooks();
+      // 2. Re-fetch แบบ background เงียบๆ โดยไม่เซ็ต isLoading(true)
+      fetchBooks(true);
     } catch (err: unknown) {
+      // Rollback กลับสู่สถานะเดิมหากเกิดข้อผิดพลาด
+      setBooks((prevBooks) =>
+        prevBooks.map((b) => (b.id === id ? { ...b, isAvailable: previousStatus } : b))
+      );
+
       const msg = err instanceof Error ? err.message : "เปลี่ยนสถานะล้มเหลว";
       toast({
         type: "error",
@@ -95,11 +112,16 @@ export default function LibraryDashboardPage() {
     }
   };
 
-  // Delete Book
+  // Delete Book (Optimistic Update)
   const handleDelete = async (id: number, title: string) => {
     if (!confirm(`คุณต้องการลบหนังสือ "${title}" (ID: ${id}) ใช่หรือไม่?`)) {
       return;
     }
+
+    const previousBooks = [...books];
+
+    // ลบออกจาก State ทันทีเพื่อให้ UI ตอบสนองรวดเร็ว
+    setBooks((prev) => prev.filter((b) => b.id !== id));
 
     try {
       const res = await fetch(`/api/books/${id}`, {
@@ -116,8 +138,11 @@ export default function LibraryDashboardPage() {
         status: 200,
       });
 
-      fetchBooks();
+      fetchBooks(true);
     } catch (err: unknown) {
+      // Rollback
+      setBooks(previousBooks);
+
       const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการลบ";
       toast({
         type: "error",
@@ -232,7 +257,7 @@ export default function LibraryDashboardPage() {
 
           {/* Refresh button */}
           <button
-            onClick={fetchBooks}
+            onClick={() => fetchBooks(false)}
             className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors"
             title="รีเฟรชข้อมูล (GET /api/books)"
           >
@@ -305,7 +330,7 @@ export default function LibraryDashboardPage() {
       <BookModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchBooks}
+        onSuccess={() => fetchBooks(true)}
         bookToEdit={bookToEdit}
       />
     </div>

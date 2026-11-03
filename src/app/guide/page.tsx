@@ -495,6 +495,61 @@ async function uploadCoverImage(file: File) {
   return data.url; // e.g. "/uploads/1700000000_cover.png"
 }`}
             />
+
+            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">✨</span>
+              เทคนิค Optimistic Update & Background Fetching (หน้าจอไม่กระตุก ไม่เลื่อน)
+            </h2>
+            <p className="text-sm text-slate-600">
+              เมื่อกดปุ่มยืม/คืนหนังสือ ให้แก้สถานะใน Array ของ State ทันที และ Sync ข้อมูลกับ Server ใน Background:
+            </p>
+
+            <CodeBlock
+              title="Optimistic Update & Silent Background Fetch Pattern"
+              language="typescript"
+              code={`// 1. ฟังก์ชันดึงข้อมูลที่รองรับโหมด Background
+const fetchBooks = async (isBackground = false) => {
+  if (!isBackground) setIsLoading(true);
+  try {
+    const res = await fetch("/api/books");
+    const data = await res.json();
+    setBooks(data);
+  } finally {
+    if (!isBackground) setIsLoading(false);
+  }
+};
+
+// 2. สลับสถานะ isAvailable แบบ Optimistic Update
+const handleToggleStatus = async (id: number) => {
+  const book = books.find((b) => b.id === id);
+  if (!book) return;
+
+  const previousStatus = book.isAvailable;
+  const newStatus = !previousStatus;
+
+  // ก้าวที่ 1: อัปเดต State ใน Array ทันที -> UI เปลี่ยนทันที ไม่กระตุก ไม่เลื่อน
+  setBooks((prev) =>
+    prev.map((b) => (b.id === id ? { ...b, isAvailable: newStatus } : b))
+  );
+
+  try {
+    const res = await fetch(\`/api/books/\${id}\`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isAvailable: newStatus }),
+    });
+    if (!res.ok) throw new Error("Update failed");
+
+    // ก้าวที่ 2: Sync ข้อมูลจริงจาก Server แบบเงียบๆ ไม่โชว์ loading skeleton
+    fetchBooks(true);
+  } catch (error) {
+    // ก้าวที่ 3: หาก API ส่ง Error ให้ Rollback คืนค่าเดิม
+    setBooks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, isAvailable: previousStatus } : b))
+    );
+  }
+};`}
+            />
           </div>
         </section>
       )}

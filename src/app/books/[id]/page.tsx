@@ -38,9 +38,11 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch single book from GET /api/books/:id
-  const fetchBook = async () => {
+  const fetchBook = async (isBackground = false) => {
     if (!id) return;
-    setIsLoading(true);
+    if (!isBackground) {
+      setIsLoading(true);
+    }
     setNotFound(false);
     try {
       const res = await fetch(`/api/books/${id}`);
@@ -61,7 +63,9 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
         message: err instanceof Error ? err.message : "Error",
       });
     } finally {
-      setIsLoading(false);
+      if (!isBackground) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -70,10 +74,14 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Toggle Borrow / Return Status
+  // Toggle Borrow / Return Status (Optimistic Update)
   const handleToggleStatus = async () => {
     if (!book) return;
-    const newStatus = !book.isAvailable;
+    const previousStatus = book.isAvailable;
+    const newStatus = !previousStatus;
+
+    // 1. Optimistic Update ทันที
+    setBook((prev) => (prev ? { ...prev, isAvailable: newStatus } : null));
 
     try {
       const res = await fetch(`/api/books/${book.id}`, {
@@ -92,7 +100,12 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
         message: `หนังสือ "${data.title}" สถานะคือ: ${newStatus ? "พร้อมให้ยืม" : "ถูกยืมอยู่"}`,
         status: 200,
       });
+
+      // 2. Sync ใน background
+      fetchBook(true);
     } catch (err: unknown) {
+      // Rollback
+      setBook((prev) => (prev ? { ...prev, isAvailable: previousStatus } : null));
       toast({
         type: "error",
         title: "เกิดข้อผิดพลาด",
