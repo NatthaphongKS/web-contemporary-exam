@@ -56,8 +56,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     if (body.name !== undefined) dto.name = body.name;
     if (body.email !== undefined) dto.email = body.email;
-    if (body.role !== undefined) dto.role = body.role;
-    if (body.avatarUrl !== undefined) dto.avatarUrl = body.avatarUrl;
 
     const updated = updateUser(id, dto);
     return NextResponse.json(updated, { status: 200 });
@@ -87,7 +85,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     }
 
     deleteUser(id);
-    return NextResponse.json({ message: "ลบผู้ใช้สำเร็จและคืนหนังสือกลับเข้าระบบแล้ว", id }, { status: 200 });
+    return NextResponse.json({ message: "ลบผู้ใช้สำเร็จ (Cascade ลบหนังสือของสมาชิกนี้ทั้งหมดแล้ว)", id }, { status: 200 });
   } catch (error) {
     console.error("DELETE /api/users/:id error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

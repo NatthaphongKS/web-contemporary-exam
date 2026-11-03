@@ -256,7 +256,8 @@ export interface ApiResponse<T = unknown> {
               code={`import { Book, CreateBookDto, UpdateBookDto } from "@/types/book";
 
 /**
- * ข้อมูลจำลองเริ่มต้น (Seed Data)
+ * ข้อมูลจำลองหนังสือเริ่มต้น (Seed Books)
+ * ตารางที่ 2: Books (id, title, author, userId, coverUrl, isAvailable)
  */
 const initialBooks: Book[] = [
   {
@@ -264,91 +265,81 @@ const initialBooks: Book[] = [
     title: "Clean Code",
     author: "Robert C. Martin",
     publishedYear: 2008,
+    userId: 1, // สมาชิก #1: สมชาย ใจดี
+    coverUrl: "/uploads/1793674702785_blog-details2_1.png",
     isAvailable: true,
-    coverUrl: null,
-    createdAt: new Date("2026-01-15T08:00:00Z").toISOString(),
   },
   {
     id: 2,
     title: "The Pragmatic Programmer",
     author: "Andrew Hunt & David Thomas",
     publishedYear: 1999,
-    isAvailable: false,
+    userId: 1, // สมาชิก #1: สมชาย ใจดี (เล่มที่ 2)
     coverUrl: null,
-    createdAt: new Date("2026-02-10T10:30:00Z").toISOString(),
+    isAvailable: false,
   },
   {
     id: 3,
-    title: "Refactoring: Improving the Design of Existing Code",
+    title: "Refactoring: Improving Code Design",
     author: "Martin Fowler",
     publishedYear: 2018,
-    isAvailable: true,
+    userId: 2, // สมาชิก #2: อลิสา มั่นคง
     coverUrl: null,
-    createdAt: new Date("2026-03-05T14:15:00Z").toISOString(),
+    isAvailable: true,
   },
   {
     id: 4,
-    title: "Design Patterns: Elements of Reusable Object-Oriented Software",
-    author: "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides",
+    title: "Design Patterns: Elements of Reusable Software",
+    author: "Erich Gamma et al.",
     publishedYear: 1994,
+    userId: 3, // สมาชิก #3: Robert C. Martin
+    coverUrl: null,
     isAvailable: true,
-    coverUrl: null,
-    createdAt: new Date("2026-03-20T09:00:00Z").toISOString(),
-  },
-  {
-    id: 5,
-    title: "You Don't Know JS: Scope & Closures",
-    author: "Kyle Simpson",
-    publishedYear: 2020,
-    isAvailable: false,
-    coverUrl: null,
-    createdAt: new Date("2026-04-01T11:45:00Z").toISOString(),
   },
 ];
 
-// เก็บข้อมูลใน globalThis เพื่อไม่ให้ข้อมูลหายเมื่อมี Fast Refresh ใน dev mode
 declare global {
-  // eslint-disable-next-line no-var
   var __libraryBooksStore: Book[] | undefined;
-  // eslint-disable-next-line no-var
   var __libraryNextId: number | undefined;
 }
 
 if (!globalThis.__libraryBooksStore) {
   globalThis.__libraryBooksStore = [...initialBooks];
-  globalThis.__libraryNextId = 6;
+  globalThis.__libraryNextId = 5;
 }
 
-/**
- * ดึงรายการหนังสือทั้งหมด (รองรับ Search & Filter)
- */
-export function getAllBooks(filter?: { search?: string; isAvailable?: boolean }): Book[] {
+function enrichBookWithUser(book: Book): Book {
+  if (!globalThis.__libraryUsersStore) return book;
+  const user = globalThis.__libraryUsersStore.find((u) => u.id === book.userId);
+  return { ...book, userName: user ? user.name : \`User #\${book.userId}\` };
+}
+
+export function getAllBooks(filter?: { search?: string; userId?: number; isAvailable?: boolean }): Book[] {
   let list = [...(globalThis.__libraryBooksStore || [])];
 
+  if (filter?.userId !== undefined) {
+    list = list.filter((b) => b.userId === filter.userId);
+  }
   if (filter?.search) {
     const q = filter.search.toLowerCase();
-    list = list.filter(
-      (b) => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
-    );
+    list = list.filter((b) => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
   }
-
   if (filter?.isAvailable !== undefined) {
     list = list.filter((b) => b.isAvailable === filter.isAvailable);
   }
 
-  return list;
+  return list.map(enrichBookWithUser);
 }
 
-/**
- * ค้นหาหนังสือตาม ID (Number)
- */
 export function getBookById(id: number): Book | undefined {
-  return (globalThis.__libraryBooksStore || []).find((b) => b.id === id);
+  const book = (globalThis.__libraryBooksStore || []).find((b) => b.id === id);
+  return book ? enrichBookWithUser(book) : undefined;
 }
 
-/**
- * เพิ่มหนังสือใหม่
- */
+export function getBooksByUserId(userId: number): Book[] {
+  return getAllBooks({ userId });
+}
+
 export function createBook(dto: CreateBookDto): Book {
   const nextId = globalThis.__libraryNextId || (globalThis.__libraryBooksStore?.length || 0) + 1;
   globalThis.__libraryNextId = nextId + 1;
@@ -357,42 +348,36 @@ export function createBook(dto: CreateBookDto): Book {
     id: nextId,
     title: dto.title.trim(),
     author: dto.author.trim(),
-    publishedYear: Number(dto.publishedYear),
-    isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : true,
+    userId: Number(dto.userId),
     coverUrl: dto.coverUrl || null,
-    createdAt: new Date().toISOString(),
+    isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : true,
+    publishedYear: dto.publishedYear ? Number(dto.publishedYear) : new Date().getFullYear(),
   };
 
   globalThis.__libraryBooksStore = [...(globalThis.__libraryBooksStore || []), newBook];
-  return newBook;
+  return enrichBookWithUser(newBook);
 }
 
-/**
- * แก้ไขหนังสือตาม ID
- */
 export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
   const books = globalThis.__libraryBooksStore || [];
   const index = books.findIndex((b) => b.id === id);
   if (index === -1) return undefined;
 
   const current = books[index];
-  const updatedBook: Book = {
+  books[index] = {
     ...current,
     title: dto.title !== undefined ? dto.title.trim() : current.title,
     author: dto.author !== undefined ? dto.author.trim() : current.author,
-    publishedYear: dto.publishedYear !== undefined ? Number(dto.publishedYear) : current.publishedYear,
-    isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : current.isAvailable,
+    userId: dto.userId !== undefined ? Number(dto.userId) : current.userId,
     coverUrl: dto.coverUrl !== undefined ? dto.coverUrl : current.coverUrl,
+    isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : current.isAvailable,
+    publishedYear: dto.publishedYear !== undefined ? Number(dto.publishedYear) : current.publishedYear,
   };
 
-  books[index] = updatedBook;
   globalThis.__libraryBooksStore = [...books];
-  return updatedBook;
+  return getBookById(id);
 }
 
-/**
- * ลบหนังสือตาม ID
- */
 export function deleteBook(id: number): boolean {
   const books = globalThis.__libraryBooksStore || [];
   const index = books.findIndex((b) => b.id === id);
@@ -403,21 +388,9 @@ export function deleteBook(id: number): boolean {
   return true;
 }
 
-/**
- * สลับสถานะหนังสือ (isAvailable)
- */
-export function toggleAvailability(id: number): Book | undefined {
-  const book = getBookById(id);
-  if (!book) return undefined;
-  return updateBook(id, { isAvailable: !book.isAvailable });
-}
-
-/**
- * รีเซ็ตข้อมูลกลับเป็น Seed Data เริ่มต้น
- */
 export function resetBooksStore(): void {
   globalThis.__libraryBooksStore = [...initialBooks];
-  globalThis.__libraryNextId = 6;
+  globalThis.__libraryNextId = 5;
 }`}
             />
           </div>
@@ -441,11 +414,12 @@ export function resetBooksStore(): void {
               language="typescript"
               code={`import { NextResponse } from "next/server";
 import { getAllBooks, createBook } from "@/lib/books-store";
+import { userExists } from "@/lib/users-store";
 import { CreateBookDto } from "@/types/book";
 
 /**
  * GET /api/books
- * ดึงรายการหนังสือทั้งหมด (รองรับ query params: search, isAvailable)
+ * ดึงรายการหนังสือทั้งหมด (รองรับ query params: search, isAvailable, userId)
  * Response: 200 OK
  */
 export async function GET(request: Request) {
@@ -453,72 +427,61 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || undefined;
     const isAvailableParam = searchParams.get("isAvailable");
+    const userIdParam = searchParams.get("userId");
     
     let isAvailable: boolean | undefined = undefined;
     if (isAvailableParam !== null) {
       isAvailable = isAvailableParam === "true";
     }
 
-    const books = getAllBooks({ search, isAvailable });
+    const userId = userIdParam ? Number(userIdParam) : undefined;
+    const books = getAllBooks({ search, isAvailable, userId });
     return NextResponse.json(books, { status: 200 });
   } catch (error) {
-    console.error("GET /api/books error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
 /**
  * POST /api/books
- * เพิ่มหนังสือเล่มใหม่
- * Body: { title, author, publishedYear, isAvailable?, coverUrl? }
- * Response: 201 Created (สำเร็จ), 400 Bad Request (ข้อมูลไม่ครบถ้วน)
+ * เพิ่มหนังสือใหม่
+ * Body: { title, author, userId, coverUrl?, isAvailable?, publishedYear? }
+ * Response: 201 Created / 400 Bad Request
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // ตรวจสอบความถูกต้องของข้อมูล (Validation)
     if (!body.title || typeof body.title !== "string" || body.title.trim() === "") {
-      return NextResponse.json(
-        { error: "กรุณาระบุชื่อหนังสือ (title)" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "กรุณาระบุชื่อหนังสือ (title)" }, { status: 400 });
     }
 
     if (!body.author || typeof body.author !== "string" || body.author.trim() === "") {
-      return NextResponse.json(
-        { error: "กรุณาระบุชื่อผู้แต่ง (author)" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "กรุณาระบุชื่อผู้แต่ง (author)" }, { status: 400 });
     }
 
-    const publishedYear = Number(body.publishedYear);
-    if (!publishedYear || isNaN(publishedYear) || publishedYear < 1000 || publishedYear > 2100) {
-      return NextResponse.json(
-        { error: "กรุณาระบุปีที่พิมพ์ให้ถูกต้อง (publishedYear เป็นตัวเลข ค.ศ.)" },
-        { status: 400 }
-      );
+    if (body.userId === undefined || body.userId === null || isNaN(Number(body.userId))) {
+      return NextResponse.json({ error: "กรุณาระบุรหัสผู้ใช้เจ้าของหนังสือ (userId)" }, { status: 400 });
+    }
+
+    const userId = Number(body.userId);
+    if (!userExists(userId)) {
+      return NextResponse.json({ error: \`ไม่พบผู้ใช้รหัส #\${userId} ในระบบ\` }, { status: 400 });
     }
 
     const dto: CreateBookDto = {
       title: body.title,
       author: body.author,
-      publishedYear,
-      isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : true,
+      userId,
       coverUrl: body.coverUrl || null,
+      isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : true,
+      publishedYear: body.publishedYear ? Number(body.publishedYear) : new Date().getFullYear(),
     };
 
     const newBook = createBook(dto);
     return NextResponse.json(newBook, { status: 201 });
   } catch (error) {
-    console.error("POST /api/books error:", error);
-    return NextResponse.json(
-      { error: "รูปแบบ JSON ไม่ถูกต้อง หรือเกิดข้อผิดพลาดภายในระบบ" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "รูปแบบ JSON ไม่ถูกต้อง" }, { status: 400 });
   }
 }`}
             />
@@ -1128,21 +1091,15 @@ const handleToggleStatus = async (id: number) => {
               title="src/types/user.ts (โค้ดจริงในโปรเจกต์)"
               language="typescript"
               code={`export interface User {
-  id: number;                  // รหัสประจำตัวผู้ใช้ (Number - Primary Key)
-  name: string;                // ชื่อ-นามสกุล (String)
-  email: string;               // อีเมล (String)
-  role?: "student" | "teacher" | "member"; // บทบาท (Optional)
-  avatarUrl?: string | null;   // รูปโปรไฟล์ (Optional)
-  booksCount?: number;         // จำนวนหนังสือที่ครอบครอง (1:N)
-  borrowedBooksCount?: number; // Alias สำหรับความเข้ากันได้
-  createdAt?: string;          // วันที่สร้างข้อมูล
+  id: number;          // รหัสประจำตัวผู้ใช้ (Primary Key)
+  name: string;        // ชื่อ-นามสกุล
+  email: string;       // อีเมล
+  booksCount?: number; // จำนวนหนังสือที่ถือครอง (1:N)
 }
 
 export type CreateUserDto = {
   name: string;
   email: string;
-  role?: "student" | "teacher" | "member";
-  avatarUrl?: string | null;
 };
 
 export type UpdateUserDto = Partial<CreateUserDto>;`}
@@ -1162,10 +1119,9 @@ export type UpdateUserDto = Partial<CreateUserDto>;`}
               code={`import { User, CreateUserDto, UpdateUserDto } from "@/types/user";
 
 const initialUsers: User[] = [
-  { id: 1, name: "สมชาย ใจดี", email: "somchai.j@example.com", role: "student", createdAt: "2026-01-10T09:00:00Z" },
-  { id: 2, name: "อลิสา มั่นคง", email: "alisa.m@example.com", role: "student", createdAt: "2026-01-12T11:30:00Z" },
-  { id: 3, name: "Robert C. Martin", email: "unclebob@cleancode.org", role: "teacher", createdAt: "2026-01-05T08:00:00Z" },
-  { id: 4, name: "Dan Abramov", email: "dan@overreacted.io", role: "member", createdAt: "2026-01-20T14:00:00Z" },
+  { id: 1, name: "สมชาย ใจดี", email: "somchai.j@example.com" },
+  { id: 2, name: "อลิสา มั่นคง", email: "alisa.m@example.com" },
+  { id: 3, name: "Robert C. Martin", email: "unclebob@cleancode.org" },
 ];
 
 declare global {
@@ -1175,7 +1131,7 @@ declare global {
 
 if (!globalThis.__libraryUsersStore) {
   globalThis.__libraryUsersStore = [...initialUsers];
-  globalThis.__libraryNextUserId = 5;
+  globalThis.__libraryNextUserId = 4;
 }
 
 export function getAllUsers(): User[] {
@@ -1200,16 +1156,14 @@ export function getUserById(id: number): User | undefined {
 }
 
 export function createUser(dto: CreateUserDto): User {
-  const nextId = globalThis.__libraryNextUserId || 5;
+  const nextId = globalThis.__libraryNextUserId || 4;
   globalThis.__libraryNextUserId = nextId + 1;
 
   const newUser: User = {
     id: nextId,
     name: dto.name.trim(),
     email: dto.email.trim(),
-    role: dto.role || "student",
     booksCount: 0,
-    createdAt: new Date().toISOString(),
   };
 
   globalThis.__libraryUsersStore = [...(globalThis.__libraryUsersStore || []), newUser];

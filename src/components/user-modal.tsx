@@ -23,17 +23,14 @@ export function UserModal({
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"student" | "teacher" | "member">("student");
 
   useEffect(() => {
     if (userToEdit) {
       setName(userToEdit.name);
       setEmail(userToEdit.email);
-      setRole(userToEdit.role || "student");
     } else {
       setName("");
       setEmail("");
-      setRole("student");
     }
   }, [userToEdit, isOpen]);
 
@@ -60,21 +57,21 @@ export function UserModal({
         const res = await fetch(`/api/users/${userToEdit.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, role }),
+          body: JSON.stringify({ name, email }),
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "แก้ไขผู้ใช้ล้มเหลว");
+        if (!res.ok) throw new Error(data.error || "แก้ไขสมาชิกไม่สำเร็จ");
 
         toast({
           type: "success",
-          title: "แก้ไขข้อมูลผู้ใช้สำเร็จ",
+          title: "แก้ไขข้อมูลสมาชิกสำเร็จ",
           message: `อัปเดต "${data.name}" เรียบร้อยแล้ว`,
           status: 200,
         });
       } else {
         // POST /api/users
-        const payload: CreateUserDto = { name, email, role };
+        const payload: CreateUserDto = { name, email };
         const res = await fetch("/api/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -82,12 +79,12 @@ export function UserModal({
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "เพิ่มผู้ใช้ล้มเหลว");
+        if (!res.ok) throw new Error(data.error || "เพิ่มสมาชิกไม่สำเร็จ");
 
         toast({
           type: "success",
-          title: "เพิ่มผู้ใช้ใหม่สำเร็จ",
-          message: `สร้างบัญชีสำหรับ "${data.name}" (ID: ${data.id}) แล้ว`,
+          title: "เพิ่มสมาชิกใหม่สำเร็จ",
+          message: `สร้างสมาชิก "${data.name}" (ID: ${data.id}) สำเร็จ`,
           status: 201,
         });
       }
@@ -109,6 +106,7 @@ export function UserModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -116,13 +114,14 @@ export function UserModal({
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900">
-                {isEditing ? `แก้ไขผู้ใช้ (ID: ${userToEdit?.id})` : "เพิ่มผู้ใช้ใหม่ (New Member)"}
+                {isEditing ? `แก้ไขสมาชิก (ID: ${userToEdit?.id})` : "เพิ่มสมาชิกใหม่"}
               </h2>
               <p className="text-xs text-slate-500 font-mono">
                 {isEditing ? `PUT /api/users/${userToEdit?.id}` : "POST /api/users"}
               </p>
             </div>
           </div>
+
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
@@ -131,24 +130,25 @@ export function UserModal({
           </button>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              ชื่อ-นามสกุล <span className="text-rose-500">*</span>
+              ชื่อ-นามสกุล (name) <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="เช่น สมชาย ใจดี, Robert C. Martin"
+              placeholder="เช่น สมชาย ใจดี"
               className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              อีเมล <span className="text-rose-500">*</span>
+              อีเมล (email) <span className="text-rose-500">*</span>
             </label>
             <input
               type="email"
@@ -158,21 +158,6 @@ export function UserModal({
               placeholder="somchai@example.com"
               className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              ประเภทผู้ใช้ (Role)
-            </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as "student" | "teacher" | "member")}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="student">นักศึกษา (Student)</option>
-              <option value="teacher">อาจารย์ / บุคลากร (Teacher)</option>
-              <option value="member">สมาชิกทั่วไป (Member)</option>
-            </select>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -190,7 +175,7 @@ export function UserModal({
               className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{isEditing ? "บันทึกการแก้ไข (200 OK)" : "สร้างผู้ใช้ (201 Created)"}</span>
+              <span>{isEditing ? "บันทึก (200 OK)" : "เพิ่มสมาชิก (201 Created)"}</span>
             </button>
           </div>
         </form>

@@ -4,7 +4,7 @@ import { CreateUserDto } from "@/types/user";
 
 /**
  * GET /api/users
- * ดึงรายชื่อผู้ใช้ทั้งหมด พร้อมจำนวนหนังสือที่ยืมอยู่ (borrowedBooksCount)
+ * ดึงรายชื่อสมาชิกทั้งหมด
  * Response: 200 OK
  */
 export async function GET() {
@@ -19,9 +19,9 @@ export async function GET() {
 
 /**
  * POST /api/users
- * เพิ่มผู้ใช้ใหม่
- * Body: { name, email, role, avatarUrl? }
- * Response: 201 Created, 400 Bad Request
+ * เพิ่มสมาชิกใหม่
+ * Body: { name, email }
+ * Response: 201 Created / 400 Bad Request
  */
 export async function POST(request: Request) {
   try {
@@ -35,19 +35,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "กรุณาระบุอีเมลที่ถูกต้อง (email)" }, { status: 400 });
     }
 
-    const role = body.role || "student";
-    if (!["student", "teacher", "member"].includes(role)) {
-      return NextResponse.json(
-        { error: "role ต้องเป็น student, teacher หรือ member เท่านั้น" },
-        { status: 400 }
-      );
-    }
-
     const dto: CreateUserDto = {
-      name: body.name,
-      email: body.email,
-      role,
-      avatarUrl: body.avatarUrl || null,
+      name: body.name.trim(),
+      email: body.email.trim(),
     };
 
     const newUser = createUser(dto);

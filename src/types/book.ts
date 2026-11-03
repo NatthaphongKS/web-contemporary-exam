@@ -10,15 +10,14 @@
  */
 
 export interface Book {
-  id: number;              // รหัสประจำหนังสือ (Number - Primary Key)
-  title: string;           // ชื่อหนังสือ (String)
-  author: string;          // ชื่อผู้แต่ง (String)
-  userId: number;          // Foreign Key ชี้กลับไปที่ Users (User 1 คน มีหนังสือหลายเล่ม)
-  coverUrl: string | null; // เก็บ Path รูป เช่น "/uploads/cover-1.jpg" (มาจาก File Upload)
-  isAvailable: boolean;    // สถานะหนังสือ (Boolean: true = พร้อมใช้งาน, false = ไม่พร้อมใช้งาน)
+  id: number;              // รหัสประจำหนังสือ (Primary Key)
+  title: string;           // ชื่อหนังสือ
+  author: string;          // ชื่อผู้แต่ง
+  userId: number;          // Foreign Key ชี้กลับไปที่ Users (1:N)
+  coverUrl: string | null; // Path รูปภาพปกจาก File Upload
+  isAvailable: boolean;    // สถานะหนังสือ (true = พร้อมใช้งาน, false = ไม่พร้อมใช้งาน)
   publishedYear?: number;  // ปีที่พิมพ์ (Optional)
-  userName?: string | null;// ชื่อ User เจ้าของหนังสือ (Populated helper สำหรับ UI)
-  createdAt?: string;      // วันที่เพิ่มข้อมูล
+  userName?: string | null;// ชื่อสมาชิกเจ้าของหนังสือ (Helper สำหรับ UI)
 }
 
 export type CreateBookDto = {

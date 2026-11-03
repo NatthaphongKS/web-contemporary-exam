@@ -1,9 +1,8 @@
 import { Book, CreateBookDto, UpdateBookDto } from "@/types/book";
 
 /**
- * ข้อมูลจำลองเริ่มต้น (Seed Books)
+ * ข้อมูลจำลองหนังสือเริ่มต้น (Seed Books)
  * ตารางที่ 2: Books (id, title, author, userId, coverUrl, isAvailable)
- * สัมพันธ์ 1:N กับ Users (User 1 คน มีหนังสือหลายเล่ม)
  */
 const initialBooks: Book[] = [
   {
@@ -14,7 +13,6 @@ const initialBooks: Book[] = [
     userId: 1, // ผู้ใช้ #1: สมชาย ใจดี
     coverUrl: "/uploads/1793674702785_blog-details2_1.png",
     isAvailable: true,
-    createdAt: new Date("2026-01-15T08:00:00Z").toISOString(),
   },
   {
     id: 2,
@@ -24,37 +22,24 @@ const initialBooks: Book[] = [
     userId: 1, // ผู้ใช้ #1: สมชาย ใจดี (เล่มที่ 2)
     coverUrl: null,
     isAvailable: false,
-    createdAt: new Date("2026-02-10T10:30:00Z").toISOString(),
   },
   {
     id: 3,
-    title: "Refactoring: Improving the Design of Existing Code",
+    title: "Refactoring: Improving Code Design",
     author: "Martin Fowler",
     publishedYear: 2018,
     userId: 2, // ผู้ใช้ #2: อลิสา มั่นคง
     coverUrl: null,
     isAvailable: true,
-    createdAt: new Date("2026-03-05T14:15:00Z").toISOString(),
   },
   {
     id: 4,
-    title: "Design Patterns: Elements of Reusable Object-Oriented Software",
-    author: "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides",
+    title: "Design Patterns: Elements of Reusable Software",
+    author: "Erich Gamma et al.",
     publishedYear: 1994,
-    userId: 2, // ผู้ใช้ #2: อลิสา มั่นคง (เล่มที่ 2)
-    coverUrl: null,
-    isAvailable: true,
-    createdAt: new Date("2026-03-20T09:00:00Z").toISOString(),
-  },
-  {
-    id: 5,
-    title: "You Don't Know JS: Scope & Closures",
-    author: "Kyle Simpson",
-    publishedYear: 2020,
     userId: 3, // ผู้ใช้ #3: Robert C. Martin
     coverUrl: null,
-    isAvailable: false,
-    createdAt: new Date("2026-04-01T11:45:00Z").toISOString(),
+    isAvailable: true,
   },
 ];
 
@@ -67,31 +52,28 @@ declare global {
 
 if (!globalThis.__libraryBooksStore) {
   globalThis.__libraryBooksStore = [...initialBooks];
-  globalThis.__libraryNextId = 6;
+  globalThis.__libraryNextId = 5;
 }
 
 /**
- * เติมชื่อ User เจ้าของหนังสือ (userName) จาก User Store
+ * เติมชื่อ User เจ้าของหนังสือ (userName) จาก Users Store
  */
 function enrichBookWithUser(book: Book): Book {
-  if (!globalThis.__libraryUsersStore) {
-    return { ...book, userName: null };
-  }
+  if (!globalThis.__libraryUsersStore) return book;
   const user = globalThis.__libraryUsersStore.find((u) => u.id === book.userId);
-  const name = user ? user.name : `User #${book.userId}`;
   return {
     ...book,
-    userName: name,
+    userName: user ? user.name : `User #${book.userId}`,
   };
 }
 
 /**
- * ดึงรายการหนังสือทั้งหมด (รองรับ Search, isAvailable, และ userId filter)
+ * ดึงรายการหนังสือทั้งหมด (รองรับ Search, userId, isAvailable filter)
  */
 export function getAllBooks(filter?: {
   search?: string;
-  isAvailable?: boolean;
   userId?: number;
+  isAvailable?: boolean;
 }): Book[] {
   let list = [...(globalThis.__libraryBooksStore || [])];
 
@@ -114,7 +96,7 @@ export function getAllBooks(filter?: {
 }
 
 /**
- * ค้นหาหนังสือตาม ID (Number)
+ * ดึงหนังสือตาม ID
  */
 export function getBookById(id: number): Book | undefined {
   const book = (globalThis.__libraryBooksStore || []).find((b) => b.id === id);
@@ -129,7 +111,7 @@ export function getBooksByUserId(userId: number): Book[] {
 }
 
 /**
- * เพิ่มหนังสือใหม่
+ * เพิ่มหนังสือใหม่ (POST)
  */
 export function createBook(dto: CreateBookDto): Book {
   const nextId = globalThis.__libraryNextId || (globalThis.__libraryBooksStore?.length || 0) + 1;
@@ -139,11 +121,10 @@ export function createBook(dto: CreateBookDto): Book {
     id: nextId,
     title: dto.title.trim(),
     author: dto.author.trim(),
-    publishedYear: dto.publishedYear ? Number(dto.publishedYear) : new Date().getFullYear(),
     userId: Number(dto.userId),
     coverUrl: dto.coverUrl || null,
     isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : true,
-    createdAt: new Date().toISOString(),
+    publishedYear: dto.publishedYear ? Number(dto.publishedYear) : new Date().getFullYear(),
   };
 
   globalThis.__libraryBooksStore = [...(globalThis.__libraryBooksStore || []), newBook];
@@ -151,7 +132,7 @@ export function createBook(dto: CreateBookDto): Book {
 }
 
 /**
- * แก้ไขหนังสือตาม ID
+ * แก้ไขข้อมูลหนังสือ (PUT)
  */
 export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
   const books = globalThis.__libraryBooksStore || [];
@@ -159,24 +140,22 @@ export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
   if (index === -1) return undefined;
 
   const current = books[index];
-  const updatedBook: Book = {
+  books[index] = {
     ...current,
     title: dto.title !== undefined ? dto.title.trim() : current.title,
     author: dto.author !== undefined ? dto.author.trim() : current.author,
-    publishedYear: dto.publishedYear !== undefined ? Number(dto.publishedYear) : current.publishedYear,
     userId: dto.userId !== undefined ? Number(dto.userId) : current.userId,
     coverUrl: dto.coverUrl !== undefined ? dto.coverUrl : current.coverUrl,
     isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : current.isAvailable,
+    publishedYear: dto.publishedYear !== undefined ? Number(dto.publishedYear) : current.publishedYear,
   };
 
-  books[index] = updatedBook;
   globalThis.__libraryBooksStore = [...books];
-
   return getBookById(id);
 }
 
 /**
- * ลบหนังสือตาม ID
+ * ลบหนังสือตาม ID (DELETE)
  */
 export function deleteBook(id: number): boolean {
   const books = globalThis.__libraryBooksStore || [];
@@ -189,21 +168,9 @@ export function deleteBook(id: number): boolean {
 }
 
 /**
- * สลับสถานะหนังสือ (พร้อมใช้งาน <-> ไม่พร้อมใช้งาน)
- */
-export function toggleBookAvailability(bookId: number): Book | undefined {
-  const book = (globalThis.__libraryBooksStore || []).find((b) => b.id === bookId);
-  if (!book) return undefined;
-
-  return updateBook(bookId, {
-    isAvailable: !book.isAvailable,
-  });
-}
-
-/**
- * รีเซ็ตข้อมูลกลับเป็นค่าเริ่มต้น (Seed)
+ * รีเซ็ตข้อมูลหนังสือกลับเป็นค่าเริ่มต้น
  */
 export function resetBooksStore(): void {
   globalThis.__libraryBooksStore = [...initialBooks];
-  globalThis.__libraryNextId = 6;
+  globalThis.__libraryNextId = 5;
 }

@@ -18,7 +18,6 @@ import {
   Trash2,
   ArrowRightLeft,
   AlertCircle,
-  Clock,
   Code2,
   UserCheck,
 } from "lucide-react";
@@ -287,13 +286,6 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                     #{book.userId} {book.userName ? `(${book.userName})` : ""}
                   </span>
                 </div>
-
-                {book.createdAt && (
-                  <div className="flex items-center gap-2 text-xs text-slate-400 pt-2">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>เพิ่มข้อมูลเมื่อ: {new Date(book.createdAt).toLocaleString("th-TH")}</span>
-                  </div>
-                )}
               </div>
 
               {/* JSON preview for studying */}

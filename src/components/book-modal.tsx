@@ -33,10 +33,9 @@ export function BookModal({
   const [isAvailable, setIsAvailable] = useState(true);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
-  // Users list for dropdown
+  // Users dropdown
   const [users, setUsers] = useState<User[]>([]);
 
-  // Fetch users when modal opens
   useEffect(() => {
     if (isOpen) {
       fetch("/api/users")
@@ -44,10 +43,8 @@ export function BookModal({
         .then((data: User[]) => {
           if (Array.isArray(data)) {
             setUsers(data);
-            if (!bookToEdit && defaultUserId) {
-              setUserId(defaultUserId);
-            } else if (!bookToEdit && data.length > 0) {
-              setUserId(data[0].id);
+            if (!bookToEdit) {
+              setUserId(defaultUserId || (data.length > 0 ? data[0].id : 1));
             }
           }
         })
@@ -55,7 +52,6 @@ export function BookModal({
     }
   }, [isOpen, defaultUserId, bookToEdit]);
 
-  // Reset or fill data when modal opens
   useEffect(() => {
     if (bookToEdit) {
       setTitle(bookToEdit.title);
@@ -70,9 +66,7 @@ export function BookModal({
       setPublishedYear(new Date().getFullYear());
       setIsAvailable(true);
       setCoverUrl(null);
-      if (defaultUserId) {
-        setUserId(defaultUserId);
-      }
+      if (defaultUserId) setUserId(defaultUserId);
     }
   }, [bookToEdit, isOpen, defaultUserId]);
 
@@ -86,79 +80,50 @@ export function BookModal({
     if (!title.trim() || !author.trim() || !userId) {
       toast({
         type: "error",
-        title: "กรุณากรอกข้อมูลให้ครบ",
-        message: "ชื่อหนังสือ, ชื่อผู้แต่ง และผู้ใช้ (userId) ห้ามเว้นว่าง",
+        title: "ข้อมูลไม่ครบถ้วน",
+        message: "กรุณาระบุชื่อหนังสือ, ผู้แต่ง และเลือกสมาชิกเจ้าของหนังสือ",
       });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      if (isEditing && bookToEdit) {
-        // PUT /api/books/:id
-        const res = await fetch(`/api/books/${bookToEdit.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            author,
-            userId: Number(userId),
-            publishedYear: publishedYear ? Number(publishedYear) : new Date().getFullYear(),
-            isAvailable,
-            coverUrl,
-          }),
-        });
+      const payload: CreateBookDto = {
+        title: title.trim(),
+        author: author.trim(),
+        userId: Number(userId),
+        publishedYear: publishedYear ? Number(publishedYear) : new Date().getFullYear(),
+        isAvailable,
+        coverUrl,
+      };
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "แก้ไขข้อมูลล้มเหลว");
-        }
+      const url = isEditing && bookToEdit ? `/api/books/${bookToEdit.id}` : "/api/books";
+      const method = isEditing ? "PUT" : "POST";
 
-        toast({
-          type: "success",
-          title: "แก้ไขหนังสือสำเร็จ",
-          message: `อัปเดต "${data.title}" เรียบร้อยแล้ว`,
-          status: 200,
-        });
-      } else {
-        // POST /api/books
-        const payload: CreateBookDto = {
-          title,
-          author,
-          userId: Number(userId),
-          publishedYear: publishedYear ? Number(publishedYear) : new Date().getFullYear(),
-          isAvailable,
-          coverUrl,
-        };
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-        const res = await fetch("/api/books", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "บันทึกข้อมูลล้มเหลว");
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "เพิ่มหนังสือล้มเหลว");
-        }
-
-        toast({
-          type: "success",
-          title: "เพิ่มหนังสือเล่มใหม่สำเร็จ",
-          message: `บันทึก "${data.title}" (ID: ${data.id}) ลงระบบแล้ว`,
-          status: 201,
-        });
-      }
+      toast({
+        type: "success",
+        title: isEditing ? "แก้ไขหนังสือสำเร็จ" : "เพิ่มหนังสือสำเร็จ",
+        message: `บันทึก "${data.title}" สำเร็จ`,
+        status: isEditing ? 200 : 201,
+      });
 
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการบันทึก";
       toast({
         type: "error",
-        title: "บันทึกข้อมูลไม่สำเร็จ",
-        message: msg,
-        status: isEditing ? 404 : 400,
+        title: "เกิดข้อผิดพลาด",
+        message: err instanceof Error ? err.message : "Error",
+        status: 400,
       });
     } finally {
       setIsSubmitting(false);
@@ -168,7 +133,7 @@ export function BookModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Modal Header */}
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -176,7 +141,7 @@ export function BookModal({
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900">
-                {isEditing ? `แก้ไขหนังสือ (ID: ${bookToEdit?.id})` : "เพิ่มหนังสือเล่มใหม่"}
+                {isEditing ? `แก้ไขหนังสือ (ID: ${bookToEdit?.id})` : "เพิ่มหนังสือใหม่"}
               </h2>
               <p className="text-xs text-slate-500 font-mono">
                 {isEditing ? `PUT /api/books/${bookToEdit?.id}` : "POST /api/books"}
@@ -192,18 +157,18 @@ export function BookModal({
           </button>
         </div>
 
-        {/* Modal Form */}
+        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* User Select (Foreign Key: userId) */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              ผู้ใช้ / เจ้าของหนังสือ (userId - Foreign Key) <span className="text-rose-500">*</span>
+              สมาชิกเจ้าของหนังสือ (userId - Foreign Key) <span className="text-rose-500">*</span>
             </label>
             <select
               value={userId}
               onChange={(e) => setUserId(Number(e.target.value))}
               required
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
             >
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
@@ -211,9 +176,6 @@ export function BookModal({
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-slate-500 mt-1">
-              ตาราง Books เชื่อมโยงแบบ 1:N กับ Users ผ่าน Foreign Key <code className="font-mono text-indigo-600">userId</code>
-            </p>
           </div>
 
           <div>
@@ -225,57 +187,50 @@ export function BookModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="เช่น Clean Code, Design Patterns..."
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              ชื่อผู้แต่ง (author) <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="เช่น Robert C. Martin..."
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="เช่น Clean Code"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                ปีที่พิมพ์ (publishedYear)
+                ชื่อผู้แต่ง (author) <span className="text-rose-500">*</span>
               </label>
               <input
-                type="number"
-                min={1000}
-                max={2100}
-                value={publishedYear}
-                onChange={(e) => setPublishedYear(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="2008"
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                type="text"
+                required
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Robert C. Martin"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                สถานะหนังสือ (isAvailable)
+                ปีที่พิมพ์ (publishedYear)
               </label>
-              <div className="flex items-center h-10 px-3.5 rounded-xl border border-slate-300 bg-slate-50/50">
-                <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={isAvailable}
-                    onChange={(e) => setIsAvailable(e.target.checked)}
-                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
-                  />
-                  <span>{isAvailable ? "พร้อมใช้งาน (Available)" : "ไม่พร้อมใช้งาน (Unavailable)"}</span>
-                </label>
-              </div>
+              <input
+                type="number"
+                value={publishedYear}
+                onChange={(e) => setPublishedYear(e.target.value === "" ? "" : Number(e.target.value))}
+                placeholder="2008"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-700 mt-1">
+              <input
+                type="checkbox"
+                checked={isAvailable}
+                onChange={(e) => setIsAvailable(e.target.checked)}
+                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
+              />
+              <span>สถานะ: {isAvailable ? "พร้อมใช้งาน (Available)" : "ไม่พร้อมใช้งาน (Unavailable)"}</span>
+            </label>
           </div>
 
           {/* File Upload Section */}
@@ -287,7 +242,7 @@ export function BookModal({
             />
           </div>
 
-          {/* Modal Actions */}
+          {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
@@ -300,10 +255,10 @@ export function BookModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{isEditing ? "บันทึกการแก้ไข (200 OK)" : "เพิ่มหนังสือ (201 Created)"}</span>
+              <span>{isEditing ? "บันทึก (200 OK)" : "เพิ่มหนังสือ (201 Created)"}</span>
             </button>
           </div>
         </form>

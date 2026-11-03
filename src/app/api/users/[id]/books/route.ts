@@ -32,7 +32,6 @@ export async function GET(request: Request, { params }: RouteParams) {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role,
         },
         booksCount: books.length,
         books,
