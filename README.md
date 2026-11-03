@@ -25,8 +25,6 @@
 6. **หน้า Static Study Guide (`/guide`)**:
    - บรรจุคำอธิบาย Step-by-Step 7 หัวข้อ พร้อมปุ่ม 1-Click Copy
    - รวบรวมคำสั่ง cURL สำหรับทดสอบ API ทุกเส้น และสรุปกับดักยอดฮิตที่มักพลาดในห้องสอบ
-7. **App Router Route Modules ครบตามมาตรฐาน**:
-   - ทุกหน้ามี `page.tsx`, `loading.tsx` (Skeleton), และ `error.tsx` (Error Boundary with Retry)
 
 ---
 
@@ -123,17 +121,11 @@ projects/web-contemporary-exam/
 │       ├── layout.tsx            # Root Layout
 │       ├── globals.css           # Tailwind CSS
 │       ├── page.tsx              # Library Dashboard
-│       ├── loading.tsx           # Dashboard Skeleton
-│       ├── error.tsx             # Dashboard Error Boundary
 │       ├── books/
 │       │   └── [id]/
-│       │       ├── page.tsx      # Single Book Detail View
-│       │       ├── loading.tsx   # Detail Skeleton
-│       │       └── error.tsx     # Detail Error Boundary
+│       │       └── page.tsx      # Single Book Detail View
 │       ├── guide/
-│       │   ├── page.tsx          # Step-by-Step Study Guide
-│       │   ├── loading.tsx   # Guide Skeleton
-│       │   └── error.tsx         # Guide Error Boundary
+│       │   └── page.tsx          # Step-by-Step Study Guide
 │       └── api/
 │           ├── books/
 │           │   ├── route.ts      # GET /api/books, POST /api/books
