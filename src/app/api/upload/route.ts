@@ -17,9 +17,14 @@ import path from "path";
 
 /**
  * POST /api/upload
+ * รับและบันทึกไฟล์รูปภาพไปยังโฟลเดอร์ public/uploads/
+ * 
+ * @function POST
+ * @param {Request} request - HTTP Request object ที่มี multipart/form-data payload
+ * @returns {Promise<NextResponse>} JSON แจ้งผลการอัปโหลด พร้อม URL สัมพัทธ์สำหรับเรียกดูรูปภาพ
  * 
  * Request:
- * • Content-Type: multipart/form-data (Browser จัดการอัตโนมัติ)
+ * • Content-Type: multipart/form-data (Browser จัดการ Boundary ให้อัตโนมัติ)
  * • Body (FormData): ฟิลด์ "file" บรรจุไฟล์รูปภาพ
  * 
  * Status Codes:
@@ -27,13 +32,13 @@ import path from "path";
  * • 400 Bad Request: ไม่มีไฟล์แนบมา หรือไฟล์มีขนาดเกิน 5MB
  * • 500 Internal Server Error: เกิดข้อผิดพลาดของระบบไฟล์ (Filesystem I/O)
  */
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
-    // 1. ดึง FormData จาก Request
+    // ขั้นตอนที่ 1: ดึง FormData จาก Request
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
-    // 2. ตรวจสอบว่ามีไฟล์แนบมาหรือไม่
+    // ขั้นตอนที่ 2: ตรวจสอบว่ามีไฟล์แนบมาหรือไม่
     if (!file) {
       return NextResponse.json(
         { error: "กรุณาแนบไฟล์ในฟิลด์ 'file'" },
@@ -41,7 +46,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. ตรวจสอบขนาดไฟล์ (จำกัดไม่เกิน 5 MB ตามเกณฑ์มาตรฐาน)
+    // ขั้นตอนที่ 3: ตรวจสอบขนาดไฟล์ (จำกัดไม่เกิน 5 MB ตามเกณฑ์มาตรฐาน)
     const MAX_SIZE = 5 * 1024 * 1024; // 5 Megabytes
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
@@ -50,15 +55,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. แปลงไฟล์เป็น Buffer เพื่อเตรียมเขียนลงดิสก์
+    // ขั้นตอนที่ 4: แปลงไฟล์เป็น Buffer เพื่อเตรียมเขียนลงดิสก์
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 5. กำหนดโฟลเดอร์ปลายทาง public/uploads และสร้างถ้ายังไม่มี (recursive: true)
+    // ขั้นตอนที่ 5: กำหนดโฟลเดอร์ปลายทาง public/uploads และสร้างถ้ายังไม่มี (recursive: true)
     const uploadDir = path.join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
 
-    // 6. ทำความสะอาดชื่อไฟล์เดิม (Sanitize) และเติม Timestamp เพื่อป้องกันชื่อซ้ำ
+    // ขั้นตอนที่ 6: ทำความสะอาดชื่อไฟล์เดิม (Sanitize) และเติม Timestamp เพื่อป้องกันชื่อซ้ำ
     const originalExt = path.extname(file.name) || ".jpg";
     const cleanBase = path
       .basename(file.name, originalExt)
@@ -67,10 +72,10 @@ export async function POST(request: Request) {
     const uniqueFilename = `${Date.now()}_${cleanBase}${originalExt}`;
     const filePath = path.join(uploadDir, uniqueFilename);
 
-    // 7. เขียนไฟล์ลงในโฟลเดอร์ public/uploads
+    // ขั้นตอนที่ 7: เขียนไฟล์ลงในโฟลเดอร์ public/uploads
     await writeFile(filePath, buffer);
 
-    // 8. สร้าง Public URL สำหรับให้อ้างอิงในเบราว์เซอร์
+    // ขั้นตอนที่ 8: สร้าง Public URL สำหรับให้อ้างอิงในเบราว์เซอร์
     const publicUrl = `/uploads/${uniqueFilename}`;
 
     return NextResponse.json(

@@ -13,19 +13,35 @@ import Image from "next/image";
 import { Book } from "@/types/book";
 import { Book as BookIcon, CheckCircle2, XCircle, Edit3, Trash2, ArrowRightLeft, UserCheck } from "lucide-react";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ BookTable
+ */
 interface BookTableProps {
+  /** รายการหนังสือทั้งหมดที่จะนำมาแสดงในตาราง */
   books: Book[];
+  /** ฟังก์ชันเมื่อคลิกแก้ไขหนังสือ */
   onEdit: (book: Book) => void;
+  /** ฟังก์ชันเมื่อคลิกลบหนังสือ */
   onDelete: (id: number, title: string) => void;
+  /** ฟังก์ชันเมื่อคลิกสลับสถานะพร้อมใช้งาน */
   onToggleStatus: (id: number) => void;
 }
 
+/**
+ * BookTable
+ * แสดงรายการหนังสือในรูปแบบตารางข้อมูล (Table View)
+ * 
+ * @component BookTable
+ * @param {BookTableProps} props - พร็อพส์สำหรับจัดการและแสดงข้อมูลในตาราง
+ * @returns {JSX.Element} ตารางแสดงผลรายการหนังสือ หรือ Empty State
+ */
 export function BookTable({
   books,
   onEdit,
   onDelete,
   onToggleStatus,
 }: BookTableProps) {
+  // ขั้นตอนที่ 1: ตรวจสอบและแสดง Empty State กรณีไม่มีข้อมูลหนังสือ
   if (books.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
@@ -36,9 +52,11 @@ export function BookTable({
     );
   }
 
+  // ขั้นตอนที่ 2: เรนเดอร์ตารางข้อมูล (Table Structure)
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
       <table className="w-full text-left text-sm">
+        {/* หัวคอลัมน์ของตาราง */}
         <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-600 border-b border-slate-200">
           <tr>
             <th className="px-4 py-3.5 w-16 text-center">ID</th>
@@ -51,6 +69,7 @@ export function BookTable({
             <th className="px-4 py-3.5 text-right w-36">การจัดการ</th>
           </tr>
         </thead>
+        {/* ขั้นตอนที่ 3: วนลูปแถวข้อมูลหนังสือ (Table Body Rows) */}
         <tbody className="divide-y divide-slate-100">
           {books.map((book) => (
             <tr key={book.id} className="hover:bg-slate-50/80 transition-colors">
@@ -139,7 +158,7 @@ export function BookTable({
                 )}
               </td>
 
-              {/* Actions */}
+              {/* ขั้นตอนที่ 4: ปุ่มปฏิบัติการในแต่ละแถว (สลับสถานะ, แก้ไข, ลบ) */}
               <td className="px-4 py-3 text-right">
                 <div className="flex items-center justify-end gap-1.5">
                   <button

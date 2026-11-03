@@ -18,12 +18,26 @@ import React, { useState, useRef } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ FileUploader
+ */
 interface FileUploaderProps {
-  currentUrl?: string | null;            // URL รูปภาพปัจจุบัน (กรณีเปิดแก้ไขหนังสือเดิม)
-  onUploadSuccess: (url: string) => void;// Callback เมื่ออัปโหลดสำเร็จ ส่ง URL รูปภาพกลับไปยัง Form
-  onRemove?: () => void;                 // Callback เมื่อกดลบรูปภาพ
+  /** URL รูปภาพปัจจุบัน (กรณีเปิดแก้ไขหนังสือเดิม) */
+  currentUrl?: string | null;
+  /** Callback เมื่ออัปโหลดสำเร็จ ส่ง URL รูปภาพกลับไปยัง Form */
+  onUploadSuccess: (url: string) => void;
+  /** Callback เมื่อกดลบรูปภาพ */
+  onRemove?: () => void;
 }
 
+/**
+ * FileUploader
+ * คอมโพเนนต์อัปโหลดไฟล์รูปภาพหน้าปกหนังสือ พร้อม Instant Preview
+ * 
+ * @component FileUploader
+ * @param {FileUploaderProps} props - พร็อพส์ของคอมโพเนนต์
+ * @returns {JSX.Element} ส่วนฟอร์มอัปโหลดรูปภาพ
+ */
 export function FileUploader({
   currentUrl,
   onUploadSuccess,
@@ -35,32 +49,37 @@ export function FileUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
-   * ทำงานเมื่อผู้ใช้เลือกไฟล์ผ่าน `<input type="file" />`
+   * ดักจับ Event เมื่อผู้ใช้เลือกไฟล์ผ่าน `<input type="file" />`
+   * 
+   * @function handleFileChange
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Event ของ Input element
    */
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ขั้นตอนที่ 1: ดึงไฟล์แรกที่ผู้ใช้เลือก
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // รีเซ็ตข้อความผิดพลาดเดิม
+    // ขั้นตอนที่ 2: รีเซ็ตข้อความผิดพลาดเดิม
     setError(null);
 
-    // ตรวจสอบขนาดไฟล์เบื้องต้นที่ฝั่ง Client (จำกัด 5MB)
+    // ขั้นตอนที่ 3: ตรวจสอบขนาดไฟล์เบื้องต้นที่ฝั่ง Client (Client-side validation จำกัด 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError("ขนาดไฟล์เกิน 5MB กรุณาเลือกไฟล์ภาพใหม่");
       return;
     }
 
-    // สร้าง Local Object URL เพื่อพรีวิวภาพบนหน้าจอทันที (Instant UX)
+    // ขั้นตอนที่ 4: สร้าง Local Object URL เพื่อพรีวิวภาพบนหน้าจอทันที (Instant Preview)
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
 
-    // เริ่มต้นอัปโหลดไฟล์ไปยัง POST /api/upload
+    // ขั้นตอนที่ 5: เตรียมข้อมูล FormData สำหรับอัปโหลด
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
 
-      // ส่งคำขอแบบ multipart/form-data (ห้ามใส่ Content-Type header ใน fetch)
+      // ขั้นตอนที่ 6: ส่งคำขอแบบ multipart/form-data ไปยัง POST /api/upload
+      // ⚠️ กฎสำคัญ: ห้ามใส่ Content-Type ใน headers เด็ดขาด ปล่อยให้เบราว์เซอร์จัดการ boundary เอง
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -72,7 +91,7 @@ export function FileUploader({
         throw new Error(data.error || "เกิดข้อผิดพลาดในการอัปโหลด");
       }
 
-      // เมื่อสำเร็จ ส่ง URL ที่เซิร์ฟเวอร์สร้างขึ้นกลับไปให้ Form บันทึก
+      // ขั้นตอนที่ 7: เมื่อสำเร็จ ส่ง URL ที่เซิร์ฟเวอร์สร้างขึ้นกลับไปให้ฟอร์มแม่ผ่าน callback
       onUploadSuccess(data.url);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "อัปโหลดไฟล์ล้มเหลว";
@@ -85,14 +104,21 @@ export function FileUploader({
   };
 
   /**
-   * ล้างรูปภาพที่เลือก
+   * ล้างรูปภาพที่เลือกและคืนค่าฟอร์มกลับสู่สถานะว่าง
+   * 
+   * @function handleClear
    */
   const handleClear = () => {
+    // ขั้นตอนที่ 1: ล้าง URL พรีวิวและข้อผิดพลาดออกจาก State
     setPreviewUrl(null);
     setError(null);
+
+    // ขั้นตอนที่ 2: รีเซ็ตค่าของ input element เป็นค่าว่าง เพื่อให้เลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+
+    // ขั้นตอนที่ 3: แจ้งฟอร์มแม่ว่ามีการลบรูปภาพออกแล้ว
     if (onRemove) {
       onRemove();
     }

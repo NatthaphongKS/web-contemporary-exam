@@ -14,6 +14,16 @@
 
 /**
  * Interface ข้อมูลหนังสือหลัก (Entity ใน Database จำลอง)
+ * 
+ * @interface Book
+ * @property {number} id - รหัสประจำหนังสือ (Primary Key)
+ * @property {string} title - ชื่อหนังสือ
+ * @property {string} author - ชื่อผู้แต่ง
+ * @property {number} userId - Foreign Key ชี้กลับไปยัง User เจ้าของหนังสือ (1 : N)
+ * @property {string | null} coverUrl - พาธของรูปภาพหน้าปกจาก File Upload API
+ * @property {boolean} isAvailable - สถานะความพร้อมของหนังสือ (true = พร้อมใช้งาน, false = ไม่พร้อมใช้งาน)
+ * @property {number} [publishedYear] - ปีที่พิมพ์ (ค.ศ.)
+ * @property {string | null} [userName] - ชื่อ User เจ้าของหนังสือ (Enriched Helper สำหรับ UI)
  */
 export interface Book {
   /**
@@ -63,6 +73,14 @@ export interface Book {
 /**
  * Data Transfer Object (DTO) สำหรับสร้างหนังสือเล่มใหม่ (POST /api/books)
  * ข้อสอบเน้นย้ำ: ต้องมี `title`, `author` และ `userId` เสมอ
+ * 
+ * @typedef {Object} CreateBookDto
+ * @property {string} title - ชื่อหนังสือ (บังคับ)
+ * @property {string} author - ชื่อผู้แต่ง (บังคับ)
+ * @property {number} userId - รหัสสมาชิกเจ้าของหนังสือ (Foreign Key - บังคับ)
+ * @property {string | null} [coverUrl] - URL รูปภาพหน้าปก
+ * @property {boolean} [isAvailable] - สถานะความพร้อมใช้งาน (ค่าเริ่มต้น: true)
+ * @property {number} [publishedYear] - ปีที่พิมพ์ ค.ศ.
  */
 export type CreateBookDto = {
   title: string;
@@ -76,12 +94,22 @@ export type CreateBookDto = {
 /**
  * Data Transfer Object (DTO) สำหรับแก้ไขข้อมูลหนังสือ (PUT /api/books/:id)
  * ยอมรับเฉพาะฟิลด์ที่ต้องการเปลี่ยนแปลง (Partial update)
+ * 
+ * @typedef {Partial<CreateBookDto>} UpdateBookDto
  */
 export type UpdateBookDto = Partial<CreateBookDto>;
 
 /**
  * Standard API Response Wrapper
  * โครงสร้างมาตรฐานสำหรับการตอบกลับ JSON Response
+ * 
+ * @template T
+ * @interface ApiResponse
+ * @property {boolean} success - สถานะสำเร็จหรือไม่
+ * @property {T} [data] - ข้อมูล payload ที่ส่งกลับ
+ * @property {string} [message] - ข้อความแจ้งเตือนผลลัพธ์
+ * @property {string} [error] - ข้อความอธิบายข้อผิดพลาด
+ * @property {number} [status] - รหัสสถานะ HTTP (เช่น 200, 201, 400, 404)
  */
 export interface ApiResponse<T = unknown> {
   success: boolean;

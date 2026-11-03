@@ -15,13 +15,28 @@ import { User, CreateUserDto } from "@/types/user";
 import { useToast } from "@/components/toast";
 import { X, UserPlus, Edit3, Loader2 } from "lucide-react";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ UserModal
+ */
 interface UserModalProps {
-  isOpen: boolean;             // สถานะเปิด/ปิด Modal
-  onClose: () => void;         // ฟังก์ชันปิด Modal
-  onSuccess: () => void;       // ฟังก์ชัน Callback เมื่อบันทึกสำเร็จ (ให้หน้าหลักรีเฟรชข้อมูล)
-  userToEdit?: User | null;    // สมาชิกที่ส่งมาแก้ไข (ถ้าเป็น null = โหมดเพิ่มสมาชิกใหม่)
+  /** สถานะเปิด/ปิด Modal */
+  isOpen: boolean;
+  /** ฟังก์ชันสั่งปิด Modal */
+  onClose: () => void;
+  /** ฟังก์ชัน Callback เมื่อบันทึกสำเร็จ (สั่งให้หน้า Dashboard รีเฟรชข้อมูล) */
+  onSuccess: () => void;
+  /** สมาชิกที่ต้องการแก้ไข (ถ้าเป็น null หรือ undefined จะเป็นโหมดสร้างสมาชิกใหม่) */
+  userToEdit?: User | null;
 }
 
+/**
+ * UserModal
+ * ป๊อปอัปฟอร์มสำหรับสร้างสมาชิกใหม่ (POST) หรือแก้ไขข้อมูลสมาชิกเดิม (PUT)
+ * 
+ * @component UserModal
+ * @param {UserModalProps} props - พร็อพส์ควบคุมสถานะและการส่งข้อมูล
+ * @returns {JSX.Element | null} Modal Dialog หรือ null หาก isOpen เป็น false
+ */
 export function UserModal({
   isOpen,
   onClose,
@@ -51,12 +66,16 @@ export function UserModal({
   const isEditing = Boolean(userToEdit);
 
   /**
-   * จัดการการกด Submit ฟอร์ม
+   * จัดการการกด Submit ฟอร์มสมาชิก (รองรับทั้ง POST และ PUT)
+   * 
+   * @function handleSubmit
+   * @param {React.FormEvent} e - Form Submit Event
    */
   const handleSubmit = async (e: React.FormEvent) => {
+    // ขั้นตอนที่ 1: ป้องกัน Default Form Submit Behavior ของเบราว์เซอร์
     e.preventDefault();
 
-    // 1. Client-side Validation ตรวจสอบค่าว่าง
+    // ขั้นตอนที่ 2: Client-side Validation ตรวจสอบค่าว่างของชื่อและอีเมล
     if (!name.trim() || !email.trim()) {
       toast({
         type: "error",
@@ -69,7 +88,7 @@ export function UserModal({
     setIsSubmitting(true);
     try {
       if (isEditing && userToEdit) {
-        // กรณีแก้ไข: ส่ง PUT /api/users/:id (200 OK)
+        // ขั้นตอนที่ 3A: กรณีแก้ไขสมาชิก -> ส่งคำขอ PUT /api/users/:id (200 OK)
         const res = await fetch(`/api/users/${userToEdit.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -86,7 +105,7 @@ export function UserModal({
           status: 200,
         });
       } else {
-        // กรณีเพิ่มใหม่: ส่ง POST /api/users (201 Created)
+        // ขั้นตอนที่ 3B: กรณีเพิ่มสมาชิกใหม่ -> ส่งคำขอ POST /api/users (201 Created)
         const payload: CreateUserDto = { name: name.trim(), email: email.trim() };
         const res = await fetch("/api/users", {
           method: "POST",
@@ -105,8 +124,9 @@ export function UserModal({
         });
       }
 
-      onSuccess(); // อัปเดตข้อมูลบนหน้าจอ
-      onClose();   // ปิด Modal
+      // ขั้นตอนที่ 4: สั่งให้อัปเดตข้อมูลบนหน้าจอ และปิดกล่อง Modal
+      onSuccess();
+      onClose();
     } catch (err: unknown) {
       toast({
         type: "error",

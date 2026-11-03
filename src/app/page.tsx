@@ -45,6 +45,13 @@ import {
   Layers,
 } from "lucide-react";
 
+/**
+ * LibraryDashboardPage
+ * คอมโพเนนต์หน้าหลักสำหรับจัดการ Master-Detail (Users และ Books)
+ * 
+ * @component LibraryDashboardPage
+ * @returns {JSX.Element} หน้าจอแดชบอร์ดหลักของห้องสมุด
+ */
 export default function LibraryDashboardPage() {
   const { toast } = useToast();
 
@@ -77,10 +84,14 @@ export default function LibraryDashboardPage() {
 
   /**
    * ดึงรายชื่อสมาชิกทั้งหมดจาก GET /api/users
+   * 
+   * @function fetchUsers
    */
   const fetchUsers = useCallback(async () => {
     try {
+      // ขั้นตอนที่ 1: เรียก API GET /api/users
       const res = await fetch("/api/users");
+      // ขั้นตอนที่ 2: แปลงผลลัพธ์และเซ็ตลงใน State users
       if (res.ok) setUsers(await res.json());
     } catch (err) {
       console.error("fetchUsers error:", err);
@@ -90,12 +101,15 @@ export default function LibraryDashboardPage() {
   /**
    * ดึงรายการหนังสือจาก GET /api/books พร้อม Query Parameters
    * 
-   * @param isBackground - หากเป็น true จะไม่เซ็ต isLoading(true) เพื่อไม่ให้หน้าจอกะพริบตอน Background Sync
+   * @function fetchBooks
+   * @param {boolean} [isBackground=false] - หากเป็น true จะไม่แสดง Skeleton เพื่อไม่ให้หน้าจอกะพริบตอน Background Sync
    */
   const fetchBooks = useCallback(
     async (isBackground = false) => {
+      // ขั้นตอนที่ 1: แสดง Loading Skeleton หากเป็นการโหลดรอบแรก
       if (!isBackground) setIsLoading(true);
       try {
+        // ขั้นตอนที่ 2: ประกอบ Query Parameters ตามเงื่อนไขค้นหา/ตัวกรอง/สมาชิกที่เลือก
         const params = new URLSearchParams();
         if (search.trim()) params.append("search", search.trim());
         if (filterAvailable === "available") params.append("isAvailable", "true");
@@ -103,11 +117,13 @@ export default function LibraryDashboardPage() {
         // ถ้ามีการเลือกสมาชิก ให้กรองเฉพาะหนังสือของ User คนนั้น (1 : N Relation)
         if (selectedUser) params.append("userId", String(selectedUser.id));
 
+        // ขั้นตอนที่ 3: ยิง HTTP Request และนำผลลัพธ์มาอัปเดต State books
         const res = await fetch(`/api/books?${params.toString()}`);
         if (res.ok) setBooks(await res.json());
       } catch (err) {
         console.error("fetchBooks error:", err);
       } finally {
+        // ขั้นตอนที่ 4: สิ้นสุดสถานะ Loading
         if (!isBackground) setIsLoading(false);
       }
     },
@@ -122,8 +138,12 @@ export default function LibraryDashboardPage() {
 
   /**
    * ฟังก์ชันรีเฟรชข้อมูลทั้งระบบ (ทั้งตาราง Users และ Books)
+   * 
+   * @function refreshAll
+   * @param {boolean} [isBackground=true] - กำหนดว่าเป็นการรีเฟรชแบบพื้นหลังหรือไม่
    */
   const refreshAll = (isBackground = true) => {
+    // ขั้นตอนที่ 1: สั่งโหลดสมาชิกและหนังสือใหม่ควบคู่กัน
     fetchUsers();
     fetchBooks(isBackground);
   };
@@ -135,23 +155,21 @@ export default function LibraryDashboardPage() {
   /**
    * สลับสถานะพร้อมใช้งานของหนังสือ (Optimistic Toggle)
    * 
-   * จังหวะการทำงาน:
-   * 1. คำนวณสถานะใหม่ และอัปเดต React State ทันที (UI สลับสวิตช์ทันตาเห็น)
-   * 2. ส่ง HTTP PUT ไปที่ /api/books/:id
-   * 3. ถ้าสำเร็จ -> แจ้งเตือน Toast และ Refresh ข้อมูลเบื้องหลัง
-   * 4. ถ้าล้มเหลว -> Rollback ค่าเดิมกลับคืนสู่ State พร้อมแจ้ง Error Toast
+   * @function handleToggleStatus
+   * @param {number} id - รหัส ID ของหนังสือที่ต้องการสลับสถานะ
    */
   const handleToggleStatus = async (id: number) => {
     const book = books.find((b) => b.id === id);
     if (!book) return;
 
+    // ขั้นตอนที่ 1: คำนวณค่าสถานะใหม่
     const newStatus = !book.isAvailable;
 
-    // จังหวะที่ 1: Optimistic Update เปลี่ยน State ทันที
+    // ขั้นตอนที่ 2: Optimistic Update เปลี่ยน State ในหน้าจอทันที ไม่ต้องรอเครือข่าย
     setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isAvailable: newStatus } : b)));
 
     try {
-      // จังหวะที่ 2: ส่งคำขอไปที่เซิร์ฟเวอร์
+      // ขั้นตอนที่ 3: ส่งคำขอ HTTP PUT ไปยัง Backend ใน Background
       const res = await fetch(`/api/books/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -159,6 +177,7 @@ export default function LibraryDashboardPage() {
       });
       if (!res.ok) throw new Error();
 
+      // ขั้นตอนที่ 4: แจ้งเตือน Toast พร้อมรีเฟรชข้อมูลจริงใน Background
       toast({
         type: "success",
         title: "เปลี่ยนสถานะสำเร็จ",
@@ -166,10 +185,9 @@ export default function LibraryDashboardPage() {
         status: 200,
       });
 
-      // จังหวะที่ 3 (สำเร็จ): Background Sync ข้อมูลจริง
       refreshAll(true);
     } catch {
-      // จังหวะที่ 3 (ล้มเหลว): Rollback คืนค่าเดิมทันที
+      // ขั้นตอนที่ 5 (กรณีล้มเหลว): Rollback คืนค่าเดิมทันที
       setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isAvailable: !newStatus } : b)));
       toast({ type: "error", title: "เกิดข้อผิดพลาด", message: "เปลี่ยนสถานะไม่สำเร็จ", status: 400 });
     }
@@ -177,23 +195,29 @@ export default function LibraryDashboardPage() {
 
   /**
    * ลบหนังสือออกจากระบบ (Optimistic Delete)
+   * 
+   * @function handleDeleteBook
+   * @param {number} id - รหัส ID หนังสือ
+   * @param {string} title - ชื่อหนังสือสำหรับแสดงในกล่องยืนยัน
    */
   const handleDeleteBook = async (id: number, title: string) => {
+    // ขั้นตอนที่ 1: กล่องยืนยันการลบหนังสือ
     if (!confirm(`คุณต้องการลบหนังสือ "${title}" ใช่หรือไม่?`)) return;
 
-    // เก็บค่าเดิมไว้สำรองกรณี Rollback
+    // ขั้นตอนที่ 2: เก็บสำรองข้อมูลเดิมไว้สำหรับกรณี Rollback
     const prevBooks = [...books];
 
-    // Optimistic Delete: ตัดรายการออกจาก State ทันที
+    // ขั้นตอนที่ 3: Optimistic Delete ตัดรายการออกจาก State ทันที
     setBooks((prev) => prev.filter((b) => b.id !== id));
 
     try {
+      // ขั้นตอนที่ 4: ส่งคำขอ DELETE ไปยัง Backend
       const res = await fetch(`/api/books/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       toast({ type: "success", title: "ลบสำเร็จ", message: `ลบ "${title}" แล้ว`, status: 200 });
       refreshAll(true);
     } catch {
-      // Rollback คืนรายการหนังสือเดิม
+      // ขั้นตอนที่ 5: Rollback คืนรายการหนังสือเดิมหากเซิร์ฟเวอร์ตอบกลับผิดพลาด
       setBooks(prevBooks);
       toast({ type: "error", title: "ลบไม่สำเร็จ", message: "เกิดข้อผิดพลาด", status: 400 });
     }
@@ -202,17 +226,24 @@ export default function LibraryDashboardPage() {
   /**
    * ลบสมาชิกออกจากระบบ (Cascade Delete Awareness)
    * หมายเหตุ: Backend จะทำการลบหนังสือทั้งหมดของสมาชิกคนนี้ออกด้วยแบบ Cascade
+   * 
+   * @function handleDeleteUser
+   * @param {number} id - รหัส ID ของสมาชิก
+   * @param {string} name - ชื่อสมาชิกสำหรับแสดงคำเตือน
    */
   const handleDeleteUser = async (id: number, name: string) => {
+    // ขั้นตอนที่ 1: กล่องยืนยันพร้อมเตือนเรื่องผลกระทบ Cascade Delete
     if (!confirm(`คุณต้องการลบสมาชิก "${name}" ใช่หรือไม่? (คำเตือน: หนังสือทั้งหมดของสมาชิกคนนี้จะถูกลบไปด้วย)`)) return;
 
     try {
+      // ขั้นตอนที่ 2: ส่งคำขอ DELETE /api/users/:id ไปยัง Backend
       const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       toast({ type: "success", title: "ลบสมาชิกสำเร็จ", message: `ลบ "${name}" แล้ว`, status: 200 });
 
-      // หากสมาชิกที่ลบไปเป็นคนที่กำลังถูกเลือกดูหนังสืออยู่ ให้ยกเลิกการเลือก
+      // ขั้นตอนที่ 3: หากสมาชิกที่ลบไปเป็นคนที่กำลังถูกเลือกดูหนังสืออยู่ ให้ยกเลิกการเลือก
       if (selectedUser?.id === id) setSelectedUser(null);
+      // ขั้นตอนที่ 4: รีเฟรชทั้งระบบเพื่อสะท้อนหนังสือที่ถูก Cascade Delete ออกไปด้วย
       refreshAll(true);
     } catch {
       toast({ type: "error", title: "ลบไม่สำเร็จ", message: "เกิดข้อผิดพลาดในการลบสมาชิก", status: 400 });

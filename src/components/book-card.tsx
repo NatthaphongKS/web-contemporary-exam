@@ -25,17 +25,32 @@ import {
   UserCheck,
 } from "lucide-react";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ BookCard
+ */
 interface BookCardProps {
+  /** ข้อมูลหนังสือ 1 เล่ม */
   book: Book;
+  /** ฟังก์ชันเมื่อคลิกแก้ไขหนังสือ */
   onEdit: (book: Book) => void;
+  /** ฟังก์ชันเมื่อคลิกลบหนังสือ */
   onDelete: (id: number, title: string) => void;
+  /** ฟังก์ชันเมื่อคลิกสลับสถานะพร้อมใช้งาน (Toggle Availability) */
   onToggleStatus: (id: number) => void;
 }
 
+/**
+ * BookCard
+ * แสดงการ์ดหนังสือ 1 เล่มในรูปแบบตารางกริด (Grid View)
+ * 
+ * @component BookCard
+ * @param {BookCardProps} props - พร็อพส์สำหรับจัดการและแสดงข้อมูลหนังสือ
+ * @returns {JSX.Element} การ์ดแสดงผลข้อมูลหนังสือ
+ */
 export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardProps) {
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all overflow-hidden group">
-      {/* Cover / Header Header (คลิกเพื่อเปิด popup แก้ไข) */}
+      {/* ขั้นตอนที่ 1: ส่วนหัวการ์ด - รูปภาพหน้าปกหนังสือ (Cover Image) พร้อม ID และสถานะความพร้อม */}
       <div
         onClick={() => onEdit(book)}
         className="relative h-44 w-full bg-linear-to-br from-slate-100 to-indigo-50/50 flex items-center justify-center border-b border-slate-100 overflow-hidden cursor-pointer"
@@ -83,7 +98,7 @@ export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardPro
         </span>
       </div>
 
-      {/* Book Content */}
+      {/* ขั้นตอนที่ 2: ข้อมูลเนื้อหาหนังสือ (ชื่อ, ผู้แต่ง, ปีที่พิมพ์ และ Foreign Key สมาชิกเจ้าของ) */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
           <button
@@ -113,7 +128,7 @@ export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardPro
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* ขั้นตอนที่ 3: ปุ่มปฏิบัติการ (Toggle Availability, Edit Modal, Delete) */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-1 text-xs">
           {/* Toggle Availability Status */}
           <button

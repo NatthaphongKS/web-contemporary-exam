@@ -69,12 +69,18 @@ if (!globalThis.__libraryBooksStore) {
  * ฟังก์ชันช่วยเติมชื่อเจ้าของหนังสือ (userName) จาก Users Store
  * จำลองพฤติกรรม SQL JOIN หรือ Eloquent with('user') ในระดับ In-Memory
  * 
- * @param book - ข้อมูลหนังสือ
- * @returns ข้อมูลหนังสือที่แนบฟิลด์ userName เรียบร้อยแล้ว
+ * @function enrichBookWithUser
+ * @param {Book} book - ข้อมูลหนังสือต้นฉบับ
+ * @returns {Book} ข้อมูลหนังสือที่แนบฟิลด์ userName เรียบร้อยแล้ว
  */
-function enrichBookWithUser(book: Book): Book {
+export function enrichBookWithUser(book: Book): Book {
+  // ขั้นตอนที่ 1: ตรวจสอบว่า Users Store พร้อมใช้งานหรือไม่
   if (!globalThis.__libraryUsersStore) return book;
+
+  // ขั้นตอนที่ 2: ค้นหา User ตาม Foreign Key userId
   const user = globalThis.__libraryUsersStore.find((u) => u.id === book.userId);
+
+  // ขั้นตอนที่ 3: แนบชื่อ User หรือ Fallback เป็นรหัส User หากไม่พบ
   return {
     ...book,
     userName: user ? user.name : `User #${book.userId}`,
@@ -85,22 +91,30 @@ function enrichBookWithUser(book: Book): Book {
  * ดึงรายการหนังสือทั้งหมด (READ ALL with Filters)
  * รองรับการค้นหาตามข้อความ (search), การกรองตามสถานะ (isAvailable) และกรองตามผู้ใช้ (userId)
  * 
- * @param filter - ตัวกรองที่ส่งมาจาก Query Parameters ใน URL
- * @returns อาร์เรย์ของหนังสือที่ตรงตามเงื่อนไข พร้อมชื่อเจ้าของ
+ * @function getAllBooks
+ * @param {Object} [filter] - ตัวกรองที่ส่งมาจาก Query Parameters ใน URL
+ * @param {string} [filter.search] - คำค้นหาชื่อหนังสือหรือผู้แต่ง
+ * @param {number} [filter.userId] - รหัสสมาชิกเพื่อกรองหนังสือเฉพาะคนนั้น (1:N Master-Detail)
+ * @param {boolean} [filter.isAvailable] - กรองตามสถานะความพร้อม
+ * @returns {Book[]} อาร์เรย์ของหนังสือที่ตรงตามเงื่อนไข พร้อมชื่อเจ้าของ
+ * 
+ * @example
+ * const availableBooks = getAllBooks({ isAvailable: true });
  */
 export function getAllBooks(filter?: {
   search?: string;
   userId?: number;
   isAvailable?: boolean;
 }): Book[] {
+  // ขั้นตอนที่ 1: คัดลอก Array ของหนังสือจาก Store
   let list = [...(globalThis.__libraryBooksStore || [])];
 
-  // กรองตามเจ้าของหนังสือ (1 : N Master-Detail View)
+  // ขั้นตอนที่ 2: กรองตามเจ้าของหนังสือ (1 : N Master-Detail View)
   if (filter?.userId !== undefined) {
     list = list.filter((b) => b.userId === filter.userId);
   }
 
-  // กรองตามคำค้นหา (Case-insensitive ทั้ง Title และ Author)
+  // ขั้นตอนที่ 3: กรองตามคำค้นหา (Case-insensitive ทั้ง Title และ Author)
   if (filter?.search) {
     const q = filter.search.toLowerCase();
     list = list.filter(
@@ -108,31 +122,42 @@ export function getAllBooks(filter?: {
     );
   }
 
-  // กรองตามสถานะความพร้อมของหนังสือ
+  // ขั้นตอนที่ 4: กรองตามสถานะความพร้อมของหนังสือ
   if (filter?.isAvailable !== undefined) {
     list = list.filter((b) => b.isAvailable === filter.isAvailable);
   }
 
-  // แนบชื่อ User ในทุกเล่ม
+  // ขั้นตอนที่ 5: เติมฟิลด์ userName ให้กับทุกเล่มก่อนส่งออกไป
   return list.map(enrichBookWithUser);
 }
 
 /**
  * ดึงหนังสือเล่มเดียวตาม ID (READ ONE)
  * 
- * @param id - รหัสประจำหนังสือ (Number)
- * @returns หนังสือเล่มนั้น หรือ undefined หากไม่พบ
+ * @function getBookById
+ * @param {number} id - รหัสประจำหนังสือ (Number)
+ * @returns {Book | undefined} หนังสือเล่มนั้นพร้อม userName หรือ undefined หากไม่พบ
+ * 
+ * @example
+ * const book = getBookById(1);
  */
 export function getBookById(id: number): Book | undefined {
+  // ขั้นตอนที่ 1: ค้นหาหนังสือตาม Primary Key id
   const book = (globalThis.__libraryBooksStore || []).find((b) => b.id === id);
+
+  // ขั้นตอนที่ 2: เติมชื่อผู้ใช้และส่งคืน
   return book ? enrichBookWithUser(book) : undefined;
 }
 
 /**
  * ดึงรายการหนังสือทั้งหมดที่ผูกกับ User ID นั้นๆ (1 : N Relationship Helper)
  * 
- * @param userId - รหัสประจำตัวสมาชิก
- * @returns อาร์เรย์ของหนังสือที่สมาชิกคนนี้ถือครอง
+ * @function getBooksByUserId
+ * @param {number} userId - รหัสประจำตัวสมาชิก
+ * @returns {Book[]} อาร์เรย์ของหนังสือที่สมาชิกคนนี้ถือครอง
+ * 
+ * @example
+ * const userBooks = getBooksByUserId(1);
  */
 export function getBooksByUserId(userId: number): Book[] {
   return getAllBooks({ userId });
@@ -141,13 +166,19 @@ export function getBooksByUserId(userId: number): Book[] {
 /**
  * เพิ่มหนังสือใหม่ (CREATE)
  * 
- * @param dto - ข้อมูลหนังสือใหม่
- * @returns หนังสือที่บันทึกสำเร็จ พร้อม ID ที่ Generate ให้อัตโนมัติ
+ * @function createBook
+ * @param {CreateBookDto} dto - ข้อมูลหนังสือใหม่
+ * @returns {Book} หนังสือที่บันทึกสำเร็จ พร้อม ID ที่ Generate ให้อัตโนมัติ
+ * 
+ * @example
+ * const newBook = createBook({ title: "Clean Arch", author: "Uncle Bob", userId: 1 });
  */
 export function createBook(dto: CreateBookDto): Book {
+  // ขั้นตอนที่ 1: สร้าง Auto-increment ID ถัดไป
   const nextId = globalThis.__libraryNextId || (globalThis.__libraryBooksStore?.length || 0) + 1;
   globalThis.__libraryNextId = nextId + 1;
 
+  // ขั้นตอนที่ 2: จัดเตรียม Object ข้อมูลหนังสือ
   const newBook: Book = {
     id: nextId,
     title: dto.title.trim(),
@@ -158,6 +189,7 @@ export function createBook(dto: CreateBookDto): Book {
     publishedYear: dto.publishedYear ? Number(dto.publishedYear) : new Date().getFullYear(),
   };
 
+  // ขั้นตอนที่ 3: บันทึกลงใน Store และส่งข้อมูลที่ Join ชื่อ User เรียบร้อยแล้วกลับไป
   globalThis.__libraryBooksStore = [...(globalThis.__libraryBooksStore || []), newBook];
   return enrichBookWithUser(newBook);
 }
@@ -165,15 +197,21 @@ export function createBook(dto: CreateBookDto): Book {
 /**
  * แก้ไขข้อมูลหนังสือ (UPDATE)
  * 
- * @param id - รหัสหนังสือที่ต้องการแก้ไข
- * @param dto - ข้อมูลที่ต้องการอัปเดต (รองรับ Partial)
- * @returns ข้อมูลหนังสือล่าสุด หรือ undefined หากไม่พบ ID
+ * @function updateBook
+ * @param {number} id - รหัสหนังสือที่ต้องการแก้ไข
+ * @param {UpdateBookDto} dto - ข้อมูลที่ต้องการอัปเดต (รองรับ Partial)
+ * @returns {Book | undefined} ข้อมูลหนังสือล่าสุด หรือ undefined หากไม่พบ ID
+ * 
+ * @example
+ * const updated = updateBook(1, { isAvailable: false });
  */
 export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
+  // ขั้นตอนที่ 1: ค้นหา Index ของหนังสือใน Store
   const books = globalThis.__libraryBooksStore || [];
   const index = books.findIndex((b) => b.id === id);
   if (index === -1) return undefined;
 
+  // ขั้นตอนที่ 2: ผสานข้อมูลเดิมกับค่าใหม่ที่ส่งมา (Partial Updates)
   const current = books[index];
   books[index] = {
     ...current,
@@ -185,6 +223,7 @@ export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
     publishedYear: dto.publishedYear !== undefined ? Number(dto.publishedYear) : current.publishedYear,
   };
 
+  // ขั้นตอนที่ 3: บันทึกคืน Store และดึงข้อมูลพร้อม userName ส่งกลับ
   globalThis.__libraryBooksStore = [...books];
   return getBookById(id);
 }
@@ -192,14 +231,20 @@ export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
 /**
  * ลบหนังสือตาม ID (DELETE)
  * 
- * @param id - รหัสหนังสือที่ต้องการลบ
- * @returns true หากลบสำเร็จ, false หากไม่พบหนังสือ
+ * @function deleteBook
+ * @param {number} id - รหัสหนังสือที่ต้องการลบ
+ * @returns {boolean} true หากลบสำเร็จ, false หากไม่พบหนังสือ
+ * 
+ * @example
+ * const success = deleteBook(1);
  */
 export function deleteBook(id: number): boolean {
+  // ขั้นตอนที่ 1: ค้นหา Index ของหนังสือ
   const books = globalThis.__libraryBooksStore || [];
   const index = books.findIndex((b) => b.id === id);
   if (index === -1) return false;
 
+  // ขั้นตอนที่ 2: ตัดข้อมูลออกจาก Array
   books.splice(index, 1);
   globalThis.__libraryBooksStore = [...books];
   return true;
@@ -207,6 +252,9 @@ export function deleteBook(id: number): boolean {
 
 /**
  * รีเซ็ตข้อมูล Books Store กลับเป็นค่าเริ่มต้น
+ * 
+ * @function resetBooksStore
+ * @returns {void}
  */
 export function resetBooksStore(): void {
   globalThis.__libraryBooksStore = [...initialBooks];

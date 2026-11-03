@@ -19,14 +19,30 @@ import { useToast } from "@/components/toast";
 import { FileUploader } from "@/components/file-uploader";
 import { X, BookPlus, Edit3, Loader2 } from "lucide-react";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ BookModal
+ */
 interface BookModalProps {
-  isOpen: boolean;                  // สถานะเปิด/ปิด Modal
-  onClose: () => void;              // ฟังก์ชันปิด Modal
-  onSuccess: () => void;            // ฟังก์ชัน Callback เมื่อบันทึกสำเร็จ (ให้หน้าหลักรีเฟรชข้อมูล)
-  bookToEdit?: Book | null;         // หนังสือที่ส่งมาแก้ไข (ถ้าไม่มี = สร้างใหม่)
-  defaultUserId?: number | null;    // รหัส User เริ่มต้นที่จะเลือกใน Dropdown (เช่น จาก Master Column)
+  /** สถานะเปิด/ปิด Modal */
+  isOpen: boolean;
+  /** ฟังก์ชันสั่งปิด Modal */
+  onClose: () => void;
+  /** ฟังก์ชัน Callback เมื่อบันทึกสำเร็จ (สั่งให้หน้าหลักรีเฟรชข้อมูล) */
+  onSuccess: () => void;
+  /** ข้อมูลหนังสือที่ต้องการแก้ไข (ถ้าเป็น null หรือ undefined คือโหมดสร้างเล่มใหม่) */
+  bookToEdit?: Book | null;
+  /** รหัส User เริ่มต้นที่จะเลือกใน Dropdown (เช่น จากการ์ด User ที่เลือกอยู่ใน Master Column) */
+  defaultUserId?: number | null;
 }
 
+/**
+ * BookModal
+ * ป๊อปอัปฟอร์มสำหรับสร้างหนังสือใหม่ (POST) หรือแก้ไขข้อมูลหนังสือเดิม (PUT)
+ * 
+ * @component BookModal
+ * @param {BookModalProps} props - พร็อพส์ควบคุมสถานะและการส่งข้อมูลหนังสือ
+ * @returns {JSX.Element | null} Modal Dialog หรือ null หาก isOpen เป็น false
+ */
 export function BookModal({
   isOpen,
   onClose,
@@ -50,7 +66,7 @@ export function BookModal({
   // รายชื่อผู้ใช้สำหรับใส่ใน Dropdown ให้เลือก Foreign Key userId
   const [users, setUsers] = useState<User[]>([]);
 
-  // 1. ดึงรายชื่อสมาชิกทั้งหมดเมื่อ Modal เปิดขึ้นมา
+  // 1. ดึงรายชื่อสมาชิกทั้งหมดเมื่อ Modal เปิดขึ้นมา เพื่อนำมาใส่ใน Dropdown เลือกเจ้าของหนังสือ
   useEffect(() => {
     if (isOpen) {
       fetch("/api/users")
@@ -92,12 +108,16 @@ export function BookModal({
   const isEditing = Boolean(bookToEdit);
 
   /**
-   * จัดการการ Submit ฟอร์ม
+   * จัดการการ Submit ฟอร์มหนังสือ (รองรับทั้ง POST และ PUT)
+   * 
+   * @function handleSubmit
+   * @param {React.FormEvent} e - Form Submit Event
    */
   const handleSubmit = async (e: React.FormEvent) => {
+    // ขั้นตอนที่ 1: ป้องกัน Default Submit Behavior ของเบราว์เซอร์
     e.preventDefault();
 
-    // ตรวจสอบความถูกต้องเบื้องต้น (Client-side Validation)
+    // ขั้นตอนที่ 2: Client-side Validation ตรวจสอบความถูกต้องเบื้องต้น
     if (!title.trim() || !author.trim() || !userId) {
       toast({
         type: "error",
@@ -109,6 +129,7 @@ export function BookModal({
 
     setIsSubmitting(true);
     try {
+      // ขั้นตอนที่ 3: จัดเตรียม Payload DTO สำหรับส่งไปยัง Backend
       const payload: CreateBookDto = {
         title: title.trim(),
         author: author.trim(),
@@ -118,10 +139,11 @@ export function BookModal({
         coverUrl,
       };
 
-      // เลือกว่าจะส่งคำขอไปที่ URL และ Method ใด ตามโหมด (Create หรือ Edit)
+      // ขั้นตอนที่ 4: กำหนด Endpoint และ Method ตามสถานะโหมด (แก้ไข: PUT /api/books/:id, เพิ่มใหม่: POST /api/books)
       const url = isEditing && bookToEdit ? `/api/books/${bookToEdit.id}` : "/api/books";
       const method = isEditing ? "PUT" : "POST";
 
+      // ขั้นตอนที่ 5: ส่ง HTTP Request ไปยังเซิร์ฟเวอร์
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -131,6 +153,7 @@ export function BookModal({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "บันทึกข้อมูลล้มเหลว");
 
+      // ขั้นตอนที่ 6: แสดง Toast แจ้งผลสำเร็จพร้อม HTTP Status Code
       toast({
         type: "success",
         title: isEditing ? "แก้ไขหนังสือสำเร็จ" : "เพิ่มหนังสือสำเร็จ",
@@ -138,8 +161,9 @@ export function BookModal({
         status: isEditing ? 200 : 201,
       });
 
-      onSuccess(); // สั่งให้หน้าหลักอัปเดตข้อมูล
-      onClose();   // ปิด Modal
+      // ขั้นตอนที่ 7: อัปเดตข้อมูลบนหน้าจอ Dashboard และสั่งปิดกล่อง Modal
+      onSuccess();
+      onClose();
     } catch (err: unknown) {
       toast({
         type: "error",

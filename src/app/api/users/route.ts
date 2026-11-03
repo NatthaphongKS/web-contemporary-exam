@@ -15,13 +15,19 @@ import { CreateUserDto } from "@/types/user";
  * GET /api/users
  * ดึงรายชื่อสมาชิกทั้งหมด พร้อมจำนวนหนังสือที่แต่ละคนถือครองอยู่
  * 
+ * @function GET
+ * @returns {Promise<NextResponse>} JSON Array ของ User ทั้งหมด
+ * 
  * Status Codes:
  * • 200 OK: สำเร็จ พร้อม JSON Array ของ Users
  * • 500 Internal Server Error: เกิดข้อผิดพลาดที่ไม่คาดคิดบนเซิร์ฟเวอร์
  */
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: เรียกอ่านข้อมูลผู้ใช้ทั้งหมดจาก Users Store
     const users = getAllUsers();
+
+    // ขั้นตอนที่ 2: ตอบกลับด้วย Status 200 OK และ JSON Array
     return NextResponse.json(users, { status: 200 });
   } catch (error) {
     console.error("GET /api/users error:", error);
@@ -36,6 +42,10 @@ export async function GET() {
  * POST /api/users
  * เพิ่มสมาชิกใหม่เข้าสู่ระบบ
  * 
+ * @function POST
+ * @param {Request} request - HTTP Request object ที่มี JSON Body { name, email }
+ * @returns {Promise<NextResponse>} User object ที่สร้างใหม่ (201) หรือ Error message (400)
+ * 
  * Request Headers:
  * • Content-Type: application/json
  * 
@@ -47,11 +57,12 @@ export async function GET() {
  * • 201 Created: บันทึกสมาชิกใหม่สำเร็จ
  * • 400 Bad Request: ข้อมูลที่ส่งมาไม่ถูกต้อง หรือ JSON ผิดรูปแบบ
  */
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: ถอดรหัส JSON Body จาก Request
     const body = await request.json();
 
-    // 1. ตรวจสอบชื่อ-นามสกุล (Validation: ต้องมีค่าและไม่เป็นสตริงว่าง)
+    // ขั้นตอนที่ 2: ตรวจสอบความถูกต้องของชื่อ-นามสกุล (Validation)
     if (!body.name || typeof body.name !== "string" || body.name.trim() === "") {
       return NextResponse.json(
         { error: "กรุณาระบุชื่อ-นามสกุล (name) ให้ถูกต้องและไม่เป็นค่าว่าง" },
@@ -59,7 +70,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. ตรวจสอบรูปแบบอีเมล (Validation: ต้องมีเครื่องหมาย @)
+    // ขั้นตอนที่ 3: ตรวจสอบความถูกต้องของอีเมล (Validation)
     if (!body.email || typeof body.email !== "string" || !body.email.includes("@")) {
       return NextResponse.json(
         { error: "กรุณาระบุอีเมลที่ถูกต้อง (email ต้องมีเครื่องหมาย @)" },
@@ -67,13 +78,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. เตรียม DTO ที่ทำความสะอาดข้อมูลแล้ว
+    // ขั้นตอนที่ 4: เตรียม DTO ที่ทำความสะอาดข้อมูลแล้ว
     const dto: CreateUserDto = {
       name: body.name.trim(),
       email: body.email.trim(),
     };
 
-    // 4. บันทึกลง Store และตอบกลับด้วย Status 201 Created
+    // ขั้นตอนที่ 5: บันทึกลง Store และตอบกลับด้วย Status 201 Created
     const newUser = createUser(dto);
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {

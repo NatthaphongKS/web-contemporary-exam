@@ -40,15 +40,21 @@ if (!globalThis.__libraryUsersStore) {
  * ดึงรายชื่อผู้ใช้ทั้งหมด (READ ALL)
  * พร้อมคำนวณจำนวนหนังสือที่แต่ละคนถือครองอยู่ (booksCount) จาก Books Store (1 : N Relation)
  * 
- * @returns อาร์เรย์ของ User ทั้งหมดพร้อมฟิลด์ booksCount
+ * @function getAllUsers
+ * @returns {User[]} อาร์เรย์ของ User ทั้งหมดพร้อมฟิลด์ booksCount ที่คำนวณแล้ว
+ * 
+ * @example
+ * const users = getAllUsers();
+ * console.log(users[0].booksCount); // 2
  */
 export function getAllUsers(): User[] {
+  // ขั้นตอนที่ 1: อ่านข้อมูลผู้ใช้และหนังสือจาก Global Memory
   const users = globalThis.__libraryUsersStore || [];
   const books = globalThis.__libraryBooksStore || [];
 
+  // ขั้นตอนที่ 2: วนลูป map เพื่อนับจำนวนหนังสือที่มี foreign key `userId` ตรงกับ `id` ของผู้ใช้แต่ละคน
   return users.map((u) => ({
     ...u,
-    // นับจำนวนหนังสือที่มี foreign key `userId` ตรงกับ `id` ของผู้ใช้คนนี้
     booksCount: books.filter((b) => b.userId === u.id).length,
   }));
 }
@@ -56,13 +62,20 @@ export function getAllUsers(): User[] {
 /**
  * ดึงข้อมูลผู้ใช้ตาม ID (READ ONE)
  * 
- * @param id - รหัสประจำตัวผู้ใช้ (Number)
- * @returns ข้อมูล User หรือ undefined หากไม่พบ
+ * @function getUserById
+ * @param {number} id - รหัสประจำตัวผู้ใช้ (Number)
+ * @returns {User | undefined} ข้อมูล User พร้อม booksCount หรือ undefined หากไม่พบ
+ * 
+ * @example
+ * const user = getUserById(1);
+ * if (!user) throw new Error("Not found");
  */
 export function getUserById(id: number): User | undefined {
+  // ขั้นตอนที่ 1: ค้นหาผู้ใช้ที่มี id ตรงกัน
   const user = (globalThis.__libraryUsersStore || []).find((u) => u.id === id);
   if (!user) return undefined;
 
+  // ขั้นตอนที่ 2: ดึงข้อมูลหนังสือมานับยอดเพื่อใส่ในฟิลด์ booksCount
   const books = globalThis.__libraryBooksStore || [];
   return {
     ...user,
@@ -74,13 +87,19 @@ export function getUserById(id: number): User | undefined {
  * เพิ่มผู้ใช้ใหม่ (CREATE)
  * สร้าง ID ให้อัตโนมัติ (Auto-increment) และบันทึกลง Store
  * 
- * @param dto - ข้อมูลชื่อและอีเมล
- * @returns User ใหม่ที่สร้างเสร็จสมบูรณ์
+ * @function createUser
+ * @param {CreateUserDto} dto - ข้อมูลชื่อและอีเมลของผู้ใช้ใหม่
+ * @returns {User} User ใหม่ที่สร้างเสร็จสมบูรณ์
+ * 
+ * @example
+ * const newUser = createUser({ name: "วีระชัย รักเรียน", email: "v@test.com" });
  */
 export function createUser(dto: CreateUserDto): User {
+  // ขั้นตอนที่ 1: คำนวณ Auto-increment ID ถัดไป
   const nextId = globalThis.__libraryNextUserId || (globalThis.__libraryUsersStore?.length || 0) + 1;
   globalThis.__libraryNextUserId = nextId + 1;
 
+  // ขั้นตอนที่ 2: ประกอบ Object สมาชิกใหม่
   const newUser: User = {
     id: nextId,
     name: dto.name.trim(),
@@ -88,6 +107,7 @@ export function createUser(dto: CreateUserDto): User {
     booksCount: 0,
   };
 
+  // ขั้นตอนที่ 3: บันทึกลงใน Array ของ Store
   globalThis.__libraryUsersStore = [...(globalThis.__libraryUsersStore || []), newUser];
   return newUser;
 }
@@ -95,15 +115,21 @@ export function createUser(dto: CreateUserDto): User {
 /**
  * แก้ไขข้อมูลผู้ใช้ (UPDATE)
  * 
- * @param id - รหัสผู้ใช้ที่ต้องการแก้ไข
- * @param dto - ข้อมูลส่วนที่ต้องการอัปเดต
- * @returns ข้อมูล User หลังแก้ไข หรือ undefined หากไม่พบ ID
+ * @function updateUser
+ * @param {number} id - รหัสผู้ใช้ที่ต้องการแก้ไข
+ * @param {UpdateUserDto} dto - ข้อมูลส่วนที่ต้องการอัปเดต (name, email)
+ * @returns {User | undefined} ข้อมูล User หลังแก้ไข หรือ undefined หากไม่พบ ID
+ * 
+ * @example
+ * const updated = updateUser(1, { name: "สมชาย รักดี" });
  */
 export function updateUser(id: number, dto: UpdateUserDto): User | undefined {
+  // ขั้นตอนที่ 1: ตรวจสอบหา Index ของผู้ใช้ใน Array
   const users = globalThis.__libraryUsersStore || [];
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return undefined;
 
+  // ขั้นตอนที่ 2: อัปเดตเฉพาะฟิลด์ที่มีการส่งค่าเข้ามา
   const current = users[index];
   users[index] = {
     ...current,
@@ -111,6 +137,7 @@ export function updateUser(id: number, dto: UpdateUserDto): User | undefined {
     email: dto.email !== undefined ? dto.email.trim() : current.email,
   };
 
+  // ขั้นตอนที่ 3: บันทึกคืนค่า Store และส่งข้อมูลล่าสุดกลับ
   globalThis.__libraryUsersStore = [...users];
   return getUserById(id);
 }
@@ -122,20 +149,25 @@ export function updateUser(id: number, dto: UpdateUserDto): User | undefined {
  * เมื่อผู้ใช้ถูกลบออกจากระบบ หนังสือทุกเล่มที่มี `userId` ตรงกับผู้ใช้นี้
  * จะต้องถูกลบออกจาก Books Store ด้วย เพื่อรักษาความสอดคล้องของข้อมูล (Referential Integrity)
  * 
- * @param id - รหัสผู้ใช้ที่ต้องการลบ
- * @returns true หากลบสำเร็จ, false หากไม่พบผู้ใช้
+ * @function deleteUser
+ * @param {number} id - รหัสผู้ใช้ที่ต้องการลบ
+ * @returns {boolean} true หากลบสำเร็จ, false หากไม่พบผู้ใช้
+ * 
+ * @example
+ * const success = deleteUser(1);
  */
 export function deleteUser(id: number): boolean {
+  // ขั้นตอนที่ 1: ตรวจสอบหาผู้ใช้ก่อนลบ
   const users = globalThis.__libraryUsersStore || [];
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return false;
 
-  // ขั้นตอน Cascade Delete: ลบหนังสือทั้งหมดของ User คนนี้ออกจาก Books Store
+  // ขั้นตอนที่ 2 (Cascade Delete): ลบหนังสือทั้งหมดของ User คนนี้ออกจาก Books Store
   if (globalThis.__libraryBooksStore) {
     globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.filter((b) => b.userId !== id);
   }
 
-  // ลบ User ออกจาก Users Store
+  // ขั้นตอนที่ 3: ลบ User ออกจาก Users Store
   users.splice(index, 1);
   globalThis.__libraryUsersStore = [...users];
   return true;
@@ -145,8 +177,12 @@ export function deleteUser(id: number): boolean {
  * ตรวจสอบความมีอยู่ของ User (Foreign Key Integrity Check)
  * ฟังก์ชันนี้ใช้ใน Books Store และ Books API เพื่อยืนยันว่า `userId` ที่ส่งมามีตัวตนอยู่จริง
  * 
- * @param id - รหัสผู้ใช้ที่ต้องการตรวจสอบ
- * @returns true หากมีผู้ใช้คนนี้อยู่ในระบบ, false หากไม่พบ
+ * @function userExists
+ * @param {number} id - รหัสผู้ใช้ที่ต้องการตรวจสอบ
+ * @returns {boolean} true หากมีผู้ใช้คนนี้อยู่ในระบบ, false หากไม่พบ
+ * 
+ * @example
+ * if (!userExists(dto.userId)) throw new Error("Invalid Foreign Key");
  */
 export function userExists(id: number): boolean {
   return (globalThis.__libraryUsersStore || []).some((u) => u.id === id);
@@ -154,6 +190,9 @@ export function userExists(id: number): boolean {
 
 /**
  * รีเซ็ตข้อมูล Users Store กลับเป็นค่าเริ่มต้น (สำหรับ Testing หรือ Reset Demo)
+ * 
+ * @function resetUsersStore
+ * @returns {void}
  */
 export function resetUsersStore(): void {
   globalThis.__libraryUsersStore = [...initialUsers];

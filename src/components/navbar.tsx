@@ -1,12 +1,32 @@
 "use client";
 
+/**
+ * ==============================================================================
+ * Navbar Component (Top Navigation Bar)
+ * ==============================================================================
+ * แถบเมนูด้านบนของเว็บไซต์ (Sticky Navigation Bar)
+ * • แสดงโลโก้ระบบ Library Exam
+ * • ไฮไลต์เมนูที่กำลังเปิดใช้งาน (Active Navigation Link)
+ * • ลิงก์ไปยังหน้าหลัก (Dashboard), คู่มือสรุปเนื้อหาสอบ (/guide) และ OpenAPI Guide (/openapi-guide)
+ * • ลิงก์ตรงไปยัง GitHub Repository สำหรับส่งงาน
+ */
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, LayoutDashboard, BookText, Zap } from "lucide-react";
 
+/**
+ * Navbar
+ * แสดงส่วนหัวและแถบเมนูนำทางหลักของเว็บไซต์
+ * 
+ * @component Navbar
+ * @returns {JSX.Element} แถบนำทางด้านบน
+ */
 export function Navbar() {
+  // ขั้นตอนที่ 1: ตรวจสอบ URL Path ปัจจุบันเพื่อคำนวณ Active State ของแต่ละแท็บ
   const pathname = usePathname();
 
+  // ขั้นตอนที่ 2: กำหนดรายการเมนูนำทางและเงื่อนไขการ Active
   const navItems = [
     {
       href: "/",
@@ -28,6 +48,7 @@ export function Navbar() {
     },
   ];
 
+  // ขั้นตอนที่ 3: เรนเดอร์ Header Navigation Bar
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

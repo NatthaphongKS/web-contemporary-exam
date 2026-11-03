@@ -1,3 +1,14 @@
+/**
+ * ==============================================================================
+ * Book Detail Page: หน้ารายละเอียดหนังสือรายเล่ม (src/app/books/[id]/page.tsx)
+ * ==============================================================================
+ * หน้าแสดงข้อมูลหนังสือเล่มเดี่ยวตาม ID (`/books/:id`):
+ * • รองรับ Next.js 15+ Async Params ผ่าน `React.use(params)`
+ * • ดึงข้อมูลแบบ Single Resource ผ่าน `GET /api/books/:id` (200 OK หรือ 404 Not Found)
+ * • รองรับการสลับสถานะพร้อมใช้งาน (Toggle availability status) แบบ Optimistic Update
+ * • รองรับการเปิดป๊อปอัปแก้ไขข้อมูล (PUT) และการลบหนังสือ (DELETE) พร้อม Redirect กลับหน้าแรก
+ */
+
 "use client";
 
 import React, { useState, useEffect, use } from "react";
@@ -22,11 +33,23 @@ import {
   UserCheck,
 } from "lucide-react";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ BookDetailPage
+ */
 interface BookDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
+/**
+ * BookDetailPage
+ * หน้าจอแสดงรายละเอียดและจัดการหนังสือเล่มเดี่ยวตาม ID
+ * 
+ * @component BookDetailPage
+ * @param {BookDetailPageProps} props - params Promise ตามสเปก Next.js 15+
+ * @returns {JSX.Element} หน้ารายละเอียดหนังสือ
+ */
 export default function BookDetailPage({ params }: BookDetailPageProps) {
+  // ขั้นตอนที่ 1: แกะ params Promise ด้วย React.use(params) ตาม Next.js 15+
   const resolvedParams = use(params);
   const id = resolvedParams.id;
   const router = useRouter();
@@ -37,7 +60,12 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
   const [notFound, setNotFound] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
 
-  // Fetch single book from GET /api/books/:id
+  /**
+   * ดึงข้อมูลหนังสือเล่มเดียวจาก GET /api/books/:id
+   * 
+   * @function fetchBook
+   * @param {boolean} [isBackground=false] - หากเป็น true จะไม่แสดง Skeleton
+   */
   const fetchBook = async (isBackground = false) => {
     if (!id) return;
     if (!isBackground) {
@@ -45,7 +73,10 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
     }
     setNotFound(false);
     try {
+      // ขั้นตอนที่ 1: ยิง Request ไปยัง GET /api/books/:id
       const res = await fetch(`/api/books/${id}`);
+      
+      // ขั้นตอนที่ 2: ตรวจสอบกรณีไม่พบหนังสือ (404 Not Found)
       if (res.status === 404) {
         setNotFound(true);
         return;
@@ -53,6 +84,8 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
       if (!res.ok) {
         throw new Error("เกิดข้อผิดพลาดในการดึงข้อมูลหนังสือ");
       }
+
+      // ขั้นตอนที่ 3: รับข้อมูล JSON และบันทึกลง State book
       const data = await res.json();
       setBook(data);
     } catch (err: unknown) {
@@ -74,16 +107,21 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Toggle Borrow / Return Status (Optimistic Update)
+  /**
+   * สลับสถานะความพร้อมใช้งาน (Toggle availability status: พร้อมใช้งาน / ไม่พร้อมใช้งาน)
+   * 
+   * @function handleToggleStatus
+   */
   const handleToggleStatus = async () => {
     if (!book) return;
     const previousStatus = book.isAvailable;
     const newStatus = !previousStatus;
 
-    // 1. Optimistic Update ทันที
+    // ขั้นตอนที่ 1: Optimistic Update ปรับสถานะใน UI ทันที
     setBook((prev) => (prev ? { ...prev, isAvailable: newStatus } : null));
 
     try {
+      // ขั้นตอนที่ 2: ส่งคำขอ HTTP PUT ไปยัง /api/books/:id
       const res = await fetch(`/api/books/${book.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -93,6 +131,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "เปลี่ยนสถานะไม่สำเร็จ");
 
+      // ขั้นตอนที่ 3: บันทึกข้อมูลที่ตอบกลับและแสดง Toast
       setBook(data);
       toast({
         type: "success",
@@ -101,10 +140,10 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
         status: 200,
       });
 
-      // 2. Sync ใน background
+      // ขั้นตอนที่ 4: Sync ข้อมูลจริงใน Background
       fetchBook(true);
     } catch (err: unknown) {
-      // Rollback
+      // ขั้นตอนที่ 5: Rollback คืนค่าสถานะเดิมหากการเรียก API ล้มเหลว
       setBook((prev) => (prev ? { ...prev, isAvailable: previousStatus } : null));
       toast({
         type: "error",
@@ -115,14 +154,21 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
     }
   };
 
-  // Delete Book
+  /**
+   * ลบหนังสือออกจากระบบผ่าน DELETE /api/books/:id
+   * 
+   * @function handleDelete
+   */
   const handleDelete = async () => {
     if (!book) return;
+
+    // ขั้นตอนที่ 1: ขอคำยืนยันจากผู้ใช้ก่อนลบ
     if (!confirm(`คุณต้องการลบหนังสือ "${book.title}" (ID: ${book.id}) ใช่หรือไม่?`)) {
       return;
     }
 
     try {
+      // ขั้นตอนที่ 2: ส่งคำขอ DELETE /api/books/:id
       const res = await fetch(`/api/books/${book.id}`, {
         method: "DELETE",
       });
@@ -130,6 +176,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ลบหนังสือไม่สำเร็จ");
 
+      // ขั้นตอนที่ 3: แสดง Toast แจ้งเตือน 200 OK
       toast({
         type: "success",
         title: "ลบข้อมูลสำเร็จ (200 OK)",
@@ -137,6 +184,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
         status: 200,
       });
 
+      // ขั้นตอนที่ 4: เปลี่ยนเส้นทางกลับไปยังหน้าแรก
       router.push("/");
     } catch (err: unknown) {
       toast({

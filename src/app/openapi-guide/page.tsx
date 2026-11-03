@@ -17,6 +17,25 @@ import {
   Globe,
 } from "lucide-react";
 
+/**
+ * ==============================================================================
+ * OpenApiGuidePage: คู่มือการประยุกต์ใช้ OpenAPI / Swagger & Postman
+ * ==============================================================================
+ * หน้าสรุปขั้นตอนและกลยุทธ์การแปลง OpenAPI 3.0 Document ให้กลายเป็น:
+ * 1. Postman Collection & Automated Request Snippets
+ * 2. Postman Mock Server สำหรับจำลอง API Backend ก่อนโค้ดจริงเสร็จ
+ * 3. Swagger Editor Client/Server SDK Generation
+ * 4. CLI Code Generation เครื่องมือช่วยสร้าง DTO / Interfaces อัตโนมัติ
+ * 5. เทคนิคการอ่าน Schemas และ Foreign Key Relations จาก OpenAPI Specification
+ */
+
+/**
+ * OpenApiGuidePage
+ * คอมโพเนนต์หน้าคู่มือแนะนำการใช้ OpenAPI/Swagger ในการทำข้อสอบ
+ * 
+ * @component OpenApiGuidePage
+ * @returns {JSX.Element} หน้าคู่มือ OpenAPI
+ */
 export default function OpenApiGuidePage() {
   const [activeModule, setActiveModule] = useState<
     "postman" | "swagger-editor" | "cli" | "schema" | "mock-server"
@@ -24,14 +43,24 @@ export default function OpenApiGuidePage() {
 
   const [copiedSwagger, setCopiedSwagger] = useState(false);
 
+  /**
+   * คัดลอก URL ของไฟล์ swagger.json ตัวอย่างลงใน Clipboard
+   * 
+   * @function handleCopySwaggerUrl
+   */
   const handleCopySwaggerUrl = async () => {
     try {
+      // ขั้นตอนที่ 1: คำนวณ URL แบบสัมบูรณ์ (Absolute URL) ของ swagger.json
       const url = `${window.location.origin}/swagger.json`;
+
+      // ขั้นตอนที่ 2: เขียน URL ลงใน Clipboard ของระบบ
       await navigator.clipboard.writeText(url);
+
+      // ขั้นตอนที่ 3: สลับสถานะ copiedSwagger เป็น true ชั่วคราว 2 วินาทีเพื่อให้เห็นปุ่มสีเขียว
       setCopiedSwagger(true);
       setTimeout(() => setCopiedSwagger(false), 2000);
     } catch (e) {
-      console.error(e);
+      console.error("Failed to copy swagger url:", e);
     }
   };
 

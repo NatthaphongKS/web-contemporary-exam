@@ -19,14 +19,21 @@ interface RouteParams {
 
 /**
  * GET /api/users/:id/books
+ * ดึงรายการหนังสือเฉพาะของสมาชิกรายบุคคล
+ * 
+ * @function GET
+ * @param {Request} request - HTTP Request object
+ * @param {RouteParams} context - URL dynamic params promise
+ * @returns {Promise<NextResponse>} Envelope object ที่มี { user, booksCount, books } (200) หรือ Error (400, 404)
  * 
  * Status Codes:
  * • 200 OK: พบผู้ใช้ และส่งคืนรายการหนังสือของคนนั้น (อาจเป็นอาเรย์ว่างหากยังไม่มีหนังสือ)
  * • 400 Bad Request: ID ไม่ใช่ตัวเลข
  * • 404 Not Found: ไม่พบผู้ใช้งานรหัสนี้
  */
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(request: Request, { params }: RouteParams): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: แกะและตรวจสอบ ID จาก URL
     const { id: rawId } = await params;
     const id = Number(rawId);
 
@@ -37,7 +44,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    // 1. ตรวจสอบว่ามีผู้ใช้นี้อยู่ในระบบหรือไม่
+    // ขั้นตอนที่ 2: ตรวจสอบว่ามีผู้ใช้นี้อยู่ในระบบหรือไม่
     const user = getUserById(id);
     if (!user) {
       return NextResponse.json(
@@ -46,10 +53,10 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    // 2. ดึงหนังสือทั้งหมดที่มี `userId === id`
+    // ขั้นตอนที่ 3: ดึงหนังสือทั้งหมดที่มี `userId === id`
     const books = getBooksByUserId(id);
 
-    // 3. ห่อ Response Object (Envelope) ให้มีทั้งข้อมูลผู้ใช้และรายการหนังสือ
+    // ขั้นตอนที่ 4: ห่อ Response Object (Envelope) ให้มีทั้งข้อมูลผู้ใช้และรายการหนังสือ
     return NextResponse.json(
       {
         user: {

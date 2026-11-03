@@ -24,16 +24,24 @@ interface RouteParams {
  * GET /api/books/:id
  * ดึงข้อมูลหนังสือเล่มเดียวตาม ID
  * 
+ * @function GET
+ * @param {Request} request - HTTP Request object
+ * @param {RouteParams} context - อ็อบเจกต์ params แบบ Promise ตาม Next.js 15+
+ * @returns {Promise<NextResponse>} JSON ข้อมูลหนังสือ หรือข้อความแจ้งเตือนข้อผิดพลาด
+ * 
  * Status Codes:
- * • 200 OK: พบหนังสือ
+ * • 200 OK: พบหนังสือ ส่งคืน Book object พร้อม User เจ้าของ
  * • 400 Bad Request: ID ไม่ใช่ตัวเลข
  * • 404 Not Found: ไม่พบหนังสือรหัสนี้
+ * • 500 Internal Server Error: เกิดข้อผิดพลาดในเซิร์ฟเวอร์
  */
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(request: Request, { params }: RouteParams): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: ดึง rawId จาก async params (Next.js 15+)
     const { id: rawId } = await params;
     const id = Number(rawId);
 
+    // ขั้นตอนที่ 2: ตรวจสอบความถูกต้องของ ID ว่าเป็นตัวเลขหรือไม่
     if (isNaN(id)) {
       return NextResponse.json(
         { error: "รหัสหนังสือ (ID) ใน URL ต้องเป็นตัวเลขเท่านั้น" },
@@ -41,6 +49,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
+    // ขั้นตอนที่ 3: ค้นหาข้อมูลหนังสือจาก Store ตาม ID
     const book = getBookById(id);
     if (!book) {
       return NextResponse.json(
@@ -49,6 +58,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
+    // ขั้นตอนที่ 4: ส่งคืนข้อมูลหนังสือพร้อมสถานะ 200 OK
     return NextResponse.json(book, { status: 200 });
   } catch (error) {
     console.error("GET /api/books/:id error:", error);
@@ -63,6 +73,11 @@ export async function GET(request: Request, { params }: RouteParams) {
  * PUT /api/books/:id
  * แก้ไขข้อมูลหนังสือตาม ID
  * 
+ * @function PUT
+ * @param {Request} request - HTTP Request object พร้อม JSON body
+ * @param {RouteParams} context - อ็อบเจกต์ params แบบ Promise ตาม Next.js 15+
+ * @returns {Promise<NextResponse>} JSON ข้อมูลหนังสือหลังแก้ไขเสร็จสมบูรณ์
+ * 
  * Request Body (รองรับ Partial Fields):
  * • title?: string
  * • author?: string
@@ -76,8 +91,9 @@ export async function GET(request: Request, { params }: RouteParams) {
  * • 400 Bad Request: ข้อมูลไม่ถูกต้อง หรือ Foreign Key ผิด
  * • 404 Not Found: ไม่พบหนังสือที่ต้องการแก้ไข
  */
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(request: Request, { params }: RouteParams): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: ดึงและตรวจสอบ ID จาก async params
     const { id: rawId } = await params;
     const id = Number(rawId);
 
@@ -88,7 +104,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    // 1. ตรวจสอบว่ามีหนังสือเล่มนี้อยู่ก่อนหรือไม่
+    // ขั้นตอนที่ 2: ตรวจสอบว่ามีหนังสือเล่มนี้อยู่ก่อนหรือไม่
     const existing = getBookById(id);
     if (!existing) {
       return NextResponse.json(
@@ -97,10 +113,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
+    // ขั้นตอนที่ 3: อ่านข้อมูล JSON Request Body
     const body = await request.json();
     const dto: UpdateBookDto = {};
 
-    // Validate & Map title
+    // ขั้นตอนที่ 4: ตรวจสอบและแมปฟิลด์ title (ถ้ามีส่งมา)
     if (body.title !== undefined) {
       if (typeof body.title !== "string" || body.title.trim() === "") {
         return NextResponse.json({ error: "ชื่อหนังสือต้องไม่เป็นค่าว่าง" }, { status: 400 });
@@ -108,7 +125,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       dto.title = body.title.trim();
     }
 
-    // Validate & Map author
+    // ขั้นตอนที่ 5: ตรวจสอบและแมปฟิลด์ author (ถ้ามีส่งมา)
     if (body.author !== undefined) {
       if (typeof body.author !== "string" || body.author.trim() === "") {
         return NextResponse.json({ error: "ชื่อผู้แต่งต้องไม่เป็นค่าว่าง" }, { status: 400 });
@@ -116,7 +133,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       dto.author = body.author.trim();
     }
 
-    // Validate & Map Foreign Key userId
+    // ขั้นตอนที่ 6: ตรวจสอบและยืนยัน Foreign Key userId กับ users-store
     if (body.userId !== undefined) {
       const uId = Number(body.userId);
       if (isNaN(uId) || !userExists(uId)) {
@@ -128,7 +145,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       dto.userId = uId;
     }
 
-    // Validate & Map publishedYear
+    // ขั้นตอนที่ 7: ตรวจสอบและแมปฟิลด์ publishedYear (ถ้ามีส่งมา)
     if (body.publishedYear !== undefined) {
       const year = Number(body.publishedYear);
       if (isNaN(year) || year < 1000 || year > 2100) {
@@ -137,16 +154,16 @@ export async function PUT(request: Request, { params }: RouteParams) {
       dto.publishedYear = year;
     }
 
-    // Map isAvailable flag
+    // ขั้นตอนที่ 8: แมปค่า isAvailable และ coverUrl
     if (body.isAvailable !== undefined) {
       dto.isAvailable = Boolean(body.isAvailable);
     }
 
-    // Map coverUrl
     if (body.coverUrl !== undefined) {
       dto.coverUrl = body.coverUrl;
     }
 
+    // ขั้นตอนที่ 9: สั่งอัปเดตข้อมูลหนังสือใน Memory Store และส่งคืนผลลัพธ์
     const updated = updateBook(id, dto);
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
@@ -162,13 +179,20 @@ export async function PUT(request: Request, { params }: RouteParams) {
  * DELETE /api/books/:id
  * ลบหนังสือตาม ID
  * 
+ * @function DELETE
+ * @param {Request} request - HTTP Request object
+ * @param {RouteParams} context - อ็อบเจกต์ params แบบ Promise ตาม Next.js 15+
+ * @returns {Promise<NextResponse>} JSON แจ้งผลการลบสำเร็จและข้อมูลหนังสือที่ถูกลบ
+ * 
  * Status Codes:
  * • 200 OK: ลบสำเร็จ
  * • 400 Bad Request: ID ไม่ถูกต้อง
  * • 404 Not Found: ไม่พบหนังสือที่ต้องการลบ
+ * • 500 Internal Server Error: เกิดข้อผิดพลาดในเซิร์ฟเวอร์
  */
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(request: Request, { params }: RouteParams): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: ดึงและตรวจสอบ ID จาก async params
     const { id: rawId } = await params;
     const id = Number(rawId);
 
@@ -179,6 +203,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
+    // ขั้นตอนที่ 2: ตรวจสอบว่าหนังสือเล่มนี้มีอยู่จริงหรือไม่
     const existing = getBookById(id);
     if (!existing) {
       return NextResponse.json(
@@ -187,6 +212,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
+    // ขั้นตอนที่ 3: ดำเนินการลบหนังสือออกจาก Store
     const deleted = deleteBook(id);
     if (!deleted) {
       return NextResponse.json(
@@ -195,6 +221,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
+    // ขั้นตอนที่ 4: ส่งคืนสถานะ 200 OK พร้อมข้อมูลหนังสือที่ถูกลบ
     return NextResponse.json(
       { message: `ลบหนังสือ ID = ${id} สำเร็จ`, deletedBook: existing },
       { status: 200 }

@@ -16,6 +16,10 @@ import { CreateBookDto } from "@/types/book";
  * GET /api/books
  * ดึงรายการหนังสือทั้งหมด พร้อมรองรับการค้นหาและตัวกรอง
  * 
+ * @function GET
+ * @param {Request} request - HTTP Request object พร้อม Query string
+ * @returns {Promise<NextResponse>} JSON Array ของรายการหนังสือ (200 OK)
+ * 
  * Query Parameters (ตัวอย่าง: /api/books?search=clean&isAvailable=true&userId=1):
  * • search: คำค้นหาชื่อหนังสือหรือชื่อผู้แต่ง (string)
  * • isAvailable: กรองสถานะความพร้อม ("true" หรือ "false")
@@ -23,23 +27,26 @@ import { CreateBookDto } from "@/types/book";
  * 
  * Status Codes:
  * • 200 OK: สำเร็จ พร้อม JSON Array ของ Books
+ * • 500 Internal Server Error: เกิดข้อผิดพลาดของเซิร์ฟเวอร์
  */
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: ดึง URL Search Parameters
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || undefined;
     const isAvailableParam = searchParams.get("isAvailable");
     const userIdParam = searchParams.get("userId");
     
-    // แปลง string query parameter เป็น boolean
+    // ขั้นตอนที่ 2: แปลง string query parameter เป็น boolean
     let isAvailable: boolean | undefined = undefined;
     if (isAvailableParam !== null) {
       isAvailable = isAvailableParam === "true";
     }
 
-    // แปลง string query parameter เป็น number
+    // ขั้นตอนที่ 3: แปลง string query parameter เป็น number
     const userId = userIdParam ? Number(userIdParam) : undefined;
 
+    // ขั้นตอนที่ 4: ดึงข้อมูลจาก Store และส่งออก
     const books = getAllBooks({ search, isAvailable, userId });
     return NextResponse.json(books, { status: 200 });
   } catch (error) {
@@ -54,6 +61,10 @@ export async function GET(request: Request) {
 /**
  * POST /api/books
  * เพิ่มหนังสือใหม่ลงในระบบ
+ * 
+ * @function POST
+ * @param {Request} request - HTTP Request พร้อม JSON Body
+ * @returns {Promise<NextResponse>} Book object ที่สร้างใหม่ (201) หรือ Error (400)
  * 
  * Request Headers:
  * • Content-Type: application/json
@@ -70,11 +81,12 @@ export async function GET(request: Request) {
  * • 201 Created: บันทึกหนังสือใหม่สำเร็จ
  * • 400 Bad Request: ข้อมูลไม่ครบถ้วน หรือ Foreign Key ไม่ถูกต้อง
  */
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // ขั้นตอนที่ 1: ถอดรหัส JSON Body
     const body = await request.json();
 
-    // 1. ตรวจสอบชื่อหนังสือ (Validation: title)
+    // ขั้นตอนที่ 2: ตรวจสอบชื่อหนังสือ (Validation: title)
     if (!body.title || typeof body.title !== "string" || body.title.trim() === "") {
       return NextResponse.json(
         { error: "กรุณาระบุชื่อหนังสือ (title) และต้องไม่เป็นค่าว่าง" },
@@ -82,7 +94,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. ตรวจสอบชื่อผู้แต่ง (Validation: author)
+    // ขั้นตอนที่ 3: ตรวจสอบชื่อผู้แต่ง (Validation: author)
     if (!body.author || typeof body.author !== "string" || body.author.trim() === "") {
       return NextResponse.json(
         { error: "กรุณาระบุชื่อผู้แต่ง (author) และต้องไม่เป็นค่าว่าง" },
@@ -90,7 +102,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. ตรวจสอบ Foreign Key: userId (หัวใจสำคัญของข้อสอบ 2 ตารางสัมพันธ์)
+    // ขั้นตอนที่ 4: ตรวจสอบ Foreign Key: userId (หัวใจสำคัญของข้อสอบ 2 ตารางสัมพันธ์)
     if (body.userId === undefined || body.userId === null || isNaN(Number(body.userId))) {
       return NextResponse.json(
         { error: "กรุณาระบุรหัสสมาชิกเจ้าของหนังสือ (userId) เป็นตัวเลข" },
@@ -107,6 +119,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // ขั้นตอนที่ 5: จัดเตรียม DTO สำหรับบันทึก
     const publishedYear = body.publishedYear ? Number(body.publishedYear) : new Date().getFullYear();
 
     const dto: CreateBookDto = {
@@ -118,6 +131,7 @@ export async function POST(request: Request) {
       publishedYear,
     };
 
+    // ขั้นตอนที่ 6: สร้างหนังสือใหม่และตอบกลับ Status 201 Created
     const newBook = createBook(dto);
     return NextResponse.json(newBook, { status: 201 });
   } catch (error) {

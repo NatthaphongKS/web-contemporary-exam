@@ -22,6 +22,28 @@ import {
   Database,
 } from "lucide-react";
 
+/**
+ * ==============================================================================
+ * StudyGuidePage: หน้าสรุปคู่มือเตรียมสอบวิชา Web ฉบับปฏิบัติการ
+ * ==============================================================================
+ * ศูนย์รวมคำอธิบาย สถาปัตยกรรม โค้ดตัวอย่าง และ Roadmap 6 ขั้นตอน:
+ * 1. Setup & Folder Structure
+ * 2. Model & In-Memory Store (globalThis)
+ * 3. RESTful API Routes (Next.js 15+ Async Params & Status Codes)
+ * 4. File Upload (FormData boundary rule)
+ * 5. Frontend Master-Detail Dashboard (React State & Optimistic UI)
+ * 6. Relational Integrity & Cascade Delete (1:N Users & Books)
+ * 7. cURL Testing Commands
+ * 8. Exam Pitfalls & Trap Avoidance
+ */
+
+/**
+ * StudyGuidePage
+ * คอมโพเนนต์หน้าคู่มือสรุปเตรียมสอบปฏิบัติการพัฒนาเว็บ
+ * 
+ * @component StudyGuidePage
+ * @returns {JSX.Element} หน้าคู่มือเตรียมสอบแบบแท็บสลับหัวข้อ
+ */
 export default function StudyGuidePage() {
   const [activeTab, setActiveTab] = useState<
     "setup" | "model" | "api" | "upload" | "frontend" | "relations" | "curl" | "pitfalls"

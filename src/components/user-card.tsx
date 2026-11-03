@@ -13,14 +13,30 @@
 import { User } from "@/types/user";
 import { User as UserIcon, BookOpen, Edit2, Trash2 } from "lucide-react";
 
+/**
+ * พร็อพส์สำหรับคอมโพเนนต์ UserCard
+ */
 interface UserCardProps {
+  /** ข้อมูลสมาชิก */
   user: User;
+  /** สถานะว่ากำลังถูกเลือกอยู่เพื่อ Filter หนังสือหรือไม่ */
   isSelected: boolean;
+  /** ฟังก์ชันเมื่อคลิกเลือกการ์ด */
   onSelect: (user: User) => void;
+  /** ฟังก์ชันเมื่อคลิกปุ่มแก้ไขสมาชิก */
   onEdit: (user: User) => void;
+  /** ฟังก์ชันเมื่อคลิกปุ่มลบสมาชิก (ส่ง id และชื่อสมาชิก) */
   onDelete: (id: number, name: string) => void;
 }
 
+/**
+ * UserCard
+ * แสดงการ์ดข้อมูลสมาชิก 1 คนในฝั่ง Master List
+ * 
+ * @component UserCard
+ * @param {UserCardProps} props - พร็อพส์สำหรับจัดการการ์ดสมาชิก
+ * @returns {JSX.Element} การ์ดข้อมูลสมาชิกพร้อมปุ่ม Action
+ */
 export function UserCard({
   user,
   isSelected,
@@ -28,6 +44,7 @@ export function UserCard({
   onEdit,
   onDelete,
 }: UserCardProps) {
+  // ขั้นตอนที่ 1: เรนเดอร์กล่องการ์ด พร้อมคำนวณสไตล์การ Active เมื่อถูกเลือก
   return (
     <div
       onClick={() => onSelect(user)}
@@ -38,6 +55,7 @@ export function UserCard({
       }`}
     >
       <div className="flex items-start justify-between gap-2">
+        {/* ขั้นตอนที่ 2: แสดงไอคอน Avatar พร้อมชื่อและอีเมลของสมาชิก */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div
             className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
@@ -55,7 +73,7 @@ export function UserCard({
           </div>
         </div>
 
-        {/* Action icons */}
+        {/* ขั้นตอนที่ 3: ปุ่ม Action (แก้ไข/ลบ) โดยใช้ stopPropagation ป้องกันการ Trigger onSelect */}
         <div
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -77,7 +95,7 @@ export function UserCard({
         </div>
       </div>
 
-      {/* Footer: Books Count */}
+      {/* ขั้นตอนที่ 4: แสดงสถิติจำนวนหนังสือที่สมาชิกครอบครอง (1:N Books Count) */}
       <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-1 text-slate-500">
           <BookOpen className="w-3 h-3 text-indigo-500" />
