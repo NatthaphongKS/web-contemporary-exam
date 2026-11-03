@@ -1,3 +1,16 @@
+/**
+ * ==============================================================================
+ * Route Handler: /api/books/[id]
+ * ==============================================================================
+ * จัดการ Resource หนังสือรายเล่ม (Individual Resource Level):
+ * • GET    /api/books/:id -> ดึงข้อมูลหนังสือตาม ID (200 OK / 404 Not Found)
+ * • PUT    /api/books/:id -> แก้ไขข้อมูลหนังสือ (200 OK / 400 Bad Request / 404 Not Found)
+ * • DELETE /api/books/:id -> ลบหนังสือออกจากระบบ (200 OK / 404 Not Found)
+ * 
+ * ⚠️ Next.js 15+ Async Params:
+ * `params` เป็น Promise ต้องใช้ `const { id: rawId } = await params;` เสมอ
+ */
+
 import { NextResponse } from "next/server";
 import { getBookById, updateBook, deleteBook } from "@/lib/books-store";
 import { userExists } from "@/lib/users-store";
@@ -10,7 +23,11 @@ interface RouteParams {
 /**
  * GET /api/books/:id
  * ดึงข้อมูลหนังสือเล่มเดียวตาม ID
- * Response: 200 OK (พบข้อมูล), 404 Not Found (ไม่พบข้อมูล)
+ * 
+ * Status Codes:
+ * • 200 OK: พบหนังสือ
+ * • 400 Bad Request: ID ไม่ใช่ตัวเลข
+ * • 404 Not Found: ไม่พบหนังสือรหัสนี้
  */
 export async function GET(request: Request, { params }: RouteParams) {
   try {
@@ -19,7 +36,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: "ID ต้องเป็นตัวเลขเท่านั้น" },
+        { error: "รหัสหนังสือ (ID) ใน URL ต้องเป็นตัวเลขเท่านั้น" },
         { status: 400 }
       );
     }
@@ -27,7 +44,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     const book = getBookById(id);
     if (!book) {
       return NextResponse.json(
-        { error: `ไม่พบหนังสือที่มี ID = ${id}` },
+        { error: `ไม่พบหนังสือที่มีรหัส ID = ${id} ในระบบ` },
         { status: 404 }
       );
     }
@@ -36,7 +53,7 @@ export async function GET(request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error("GET /api/books/:id error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์ในการดึงข้อมูลหนังสือ" },
       { status: 500 }
     );
   }
@@ -45,7 +62,19 @@ export async function GET(request: Request, { params }: RouteParams) {
 /**
  * PUT /api/books/:id
  * แก้ไขข้อมูลหนังสือตาม ID
- * Response: 200 OK (แก้ไขสำเร็จ), 404 Not Found (ไม่พบหนังสือ), 400 Bad Request
+ * 
+ * Request Body (รองรับ Partial Fields):
+ * • title?: string
+ * • author?: string
+ * • userId?: number (หากส่งมา จะตรวจสอบว่ามี User นี้จริง)
+ * • coverUrl?: string | null
+ * • isAvailable?: boolean
+ * • publishedYear?: number
+ * 
+ * Status Codes:
+ * • 200 OK: แก้ไขสำเร็จ
+ * • 400 Bad Request: ข้อมูลไม่ถูกต้อง หรือ Foreign Key ผิด
+ * • 404 Not Found: ไม่พบหนังสือที่ต้องการแก้ไข
  */
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
@@ -54,15 +83,16 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: "ID ต้องเป็นตัวเลขเท่านั้น" },
+        { error: "รหัสหนังสือ (ID) ต้องเป็นตัวเลขเท่านั้น" },
         { status: 400 }
       );
     }
 
+    // 1. ตรวจสอบว่ามีหนังสือเล่มนี้อยู่ก่อนหรือไม่
     const existing = getBookById(id);
     if (!existing) {
       return NextResponse.json(
-        { error: `ไม่พบหนังสือที่มี ID = ${id} เพื่อทำการแก้ไข` },
+        { error: `ไม่พบหนังสือรหัส ID = ${id} เพื่อทำการแก้ไข` },
         { status: 404 }
       );
     }
@@ -70,40 +100,49 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const body = await request.json();
     const dto: UpdateBookDto = {};
 
+    // Validate & Map title
     if (body.title !== undefined) {
       if (typeof body.title !== "string" || body.title.trim() === "") {
         return NextResponse.json({ error: "ชื่อหนังสือต้องไม่เป็นค่าว่าง" }, { status: 400 });
       }
-      dto.title = body.title;
+      dto.title = body.title.trim();
     }
 
+    // Validate & Map author
     if (body.author !== undefined) {
       if (typeof body.author !== "string" || body.author.trim() === "") {
         return NextResponse.json({ error: "ชื่อผู้แต่งต้องไม่เป็นค่าว่าง" }, { status: 400 });
       }
-      dto.author = body.author;
+      dto.author = body.author.trim();
     }
 
+    // Validate & Map Foreign Key userId
     if (body.userId !== undefined) {
       const uId = Number(body.userId);
       if (isNaN(uId) || !userExists(uId)) {
-        return NextResponse.json({ error: `ไม่พบผู้ใช้รหัส #${body.userId} ในระบบ (Foreign Key ไม่ถูกต้อง)` }, { status: 400 });
+        return NextResponse.json(
+          { error: `ไม่พบสมาชิกที่มีรหัส #${body.userId} ในระบบ (Foreign Key ไม่ถูกต้อง)` },
+          { status: 400 }
+        );
       }
       dto.userId = uId;
     }
 
+    // Validate & Map publishedYear
     if (body.publishedYear !== undefined) {
       const year = Number(body.publishedYear);
       if (isNaN(year) || year < 1000 || year > 2100) {
-        return NextResponse.json({ error: "ปีที่พิมพ์ต้องเป็นตัวเลข ค.ศ. ที่ถูกต้อง" }, { status: 400 });
+        return NextResponse.json({ error: "ปีที่พิมพ์ต้องเป็นตัวเลข ค.ศ. ที่สมเหตุสมผล" }, { status: 400 });
       }
       dto.publishedYear = year;
     }
 
+    // Map isAvailable flag
     if (body.isAvailable !== undefined) {
       dto.isAvailable = Boolean(body.isAvailable);
     }
 
+    // Map coverUrl
     if (body.coverUrl !== undefined) {
       dto.coverUrl = body.coverUrl;
     }
@@ -113,7 +152,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error("PUT /api/books/:id error:", error);
     return NextResponse.json(
-      { error: "รูปแบบ JSON ไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการแก้ไข" },
+      { error: "รูปแบบ JSON ใน Request Body ไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการแก้ไข" },
       { status: 400 }
     );
   }
@@ -122,7 +161,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
 /**
  * DELETE /api/books/:id
  * ลบหนังสือตาม ID
- * Response: 200 OK (ลบสำเร็จ), 404 Not Found (ไม่พบหนังสือ)
+ * 
+ * Status Codes:
+ * • 200 OK: ลบสำเร็จ
+ * • 400 Bad Request: ID ไม่ถูกต้อง
+ * • 404 Not Found: ไม่พบหนังสือที่ต้องการลบ
  */
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
@@ -131,7 +174,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: "ID ต้องเป็นตัวเลขเท่านั้น" },
+        { error: "รหัสหนังสือ (ID) ต้องเป็นตัวเลขเท่านั้น" },
         { status: 400 }
       );
     }
@@ -147,7 +190,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const deleted = deleteBook(id);
     if (!deleted) {
       return NextResponse.json(
-        { error: "เกิดข้อผิดพลาดในการลบข้อมูล" },
+        { error: "เกิดข้อผิดพลาดในการลบข้อมูลหนังสือ" },
         { status: 500 }
       );
     }
@@ -159,7 +202,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error("DELETE /api/books/:id error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์ในการลบหนังสือ" },
       { status: 500 }
     );
   }

@@ -1,25 +1,69 @@
 /**
- * Data Model สำหรับระบบจัดการหนังสือ (Books)
- * ตารางที่ 2 ตามข้อกำหนดการสอบ:
- * • id: Number (Primary Key)
- * • title: String
- * • author: String
- * • userId: Number (Foreign Key ชี้กลับไปที่ Users)
- * • coverUrl: String (เก็บ Path รูป เช่น "/uploads/cover-1.jpg")
- * • isAvailable: Boolean
+ * ==============================================================================
+ * Data Model: ตารางที่ 2 — หนังสือ (Books)
+ * ==============================================================================
+ * ไฟล์นี้ใช้กำหนดโครงสร้างข้อมูลหนังสือ และ DTOs สำหรับระบบ RESTful API
+ * อ้างอิงตามข้อกำหนดการสอบปฏิบัติวิชา Web Contemporary:
+ * 
+ * คุณสมบัติสำคัญของตาราง Books:
+ * 1. Primary Key: `id` (Number)
+ * 2. Foreign Key: `userId` (Number) ชี้กลับไปยัง User เจ้าของหนังสือ (1 : N Relation)
+ * 3. File Upload Field: `coverUrl` (String | null) เก็บ URL พาธรูปภาพปก เช่น "/uploads/cover.jpg"
+ * 4. Boolean Flag: `isAvailable` (Boolean) สถานะพร้อมใช้งาน/ยืม
  */
 
+/**
+ * Interface ข้อมูลหนังสือหลัก (Entity ใน Database จำลอง)
+ */
 export interface Book {
-  id: number;              // รหัสประจำหนังสือ (Primary Key)
-  title: string;           // ชื่อหนังสือ
-  author: string;          // ชื่อผู้แต่ง
-  userId: number;          // Foreign Key ชี้กลับไปที่ Users (1:N)
-  coverUrl: string | null; // Path รูปภาพปกจาก File Upload
-  isAvailable: boolean;    // สถานะหนังสือ (true = พร้อมใช้งาน, false = ไม่พร้อมใช้งาน)
-  publishedYear?: number;  // ปีที่พิมพ์ (Optional)
-  userName?: string | null;// ชื่อสมาชิกเจ้าของหนังสือ (Helper สำหรับ UI)
+  /**
+   * รหัสประจำหนังสือ (Primary Key)
+   */
+  id: number;
+
+  /**
+   * ชื่อหนังสือ (Title)
+   */
+  title: string;
+
+  /**
+   * ชื่อผู้แต่ง (Author)
+   */
+  author: string;
+
+  /**
+   * Foreign Key ชี้กลับไปยัง `User.id` เพื่อระบุผู้ถือครองหนังสือ (1 : N Relation)
+   * กฎการสอบ: ต้องตรวจสอบว่า `userId` มีอยู่ในตาราง Users ก่อนบันทึกเสมอ (Foreign Key Integrity)
+   */
+  userId: number;
+
+  /**
+   * พาธของรูปภาพหน้าปกที่ได้จากการอัปโหลดผ่าน File Upload API (POST /api/upload)
+   * ค่าเป็น null หากยังไม่ได้อัปโหลดรูปภาพ
+   */
+  coverUrl: string | null;
+
+  /**
+   * สถานะความพร้อมของหนังสือ (true = พร้อมใช้งาน, false = ไม่พร้อมใช้งาน)
+   */
+  isAvailable: boolean;
+
+  /**
+   * ปีที่จัดพิมพ์ (ค.ศ.) - ฟิลด์เสริม (Optional)
+   */
+  publishedYear?: number;
+
+  /**
+   * ชื่อของ User เจ้าของหนังสือ (Populated / Enriched Field)
+   * เติมค่าอัตโนมัติจาก Users Store เพื่อให้ UI นำไปแสดงผลได้ทันทีโดยไม่ต้อง Query ซ้ำ
+   */
+  userName?: string | null;
 }
 
+/**
+ * Data Transfer Object (DTO) สำหรับสร้างหนังสือเล่มใหม่ (POST /api/books)
+ * ข้อสอบเน้นย้ำ: ต้องมี `title`, `author` และ `userId` เสมอ
+ */
 export type CreateBookDto = {
   title: string;
   author: string;
@@ -29,8 +73,16 @@ export type CreateBookDto = {
   publishedYear?: number;
 };
 
+/**
+ * Data Transfer Object (DTO) สำหรับแก้ไขข้อมูลหนังสือ (PUT /api/books/:id)
+ * ยอมรับเฉพาะฟิลด์ที่ต้องการเปลี่ยนแปลง (Partial update)
+ */
 export type UpdateBookDto = Partial<CreateBookDto>;
 
+/**
+ * Standard API Response Wrapper
+ * โครงสร้างมาตรฐานสำหรับการตอบกลับ JSON Response
+ */
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;

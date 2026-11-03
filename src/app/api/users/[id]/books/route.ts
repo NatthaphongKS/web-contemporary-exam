@@ -1,3 +1,14 @@
+/**
+ * ==============================================================================
+ * Route Handler: /api/users/[id]/books (Relational 1:N Endpoint)
+ * ==============================================================================
+ * ดึงรายการหนังสือเฉพาะที่ผูกกับผู้ใช้งาน ID นั้นๆ (One-to-Many Relationship)
+ * ตามข้อสอบ: ระบบต้องสามารถแสดงหนังสือทั้งหมดที่เป็นของสมาชิกรายคนได้
+ * 
+ * ตัวอย่างการเรียกใช้:
+ * • GET /api/users/1/books -> ดึงเฉพาะหนังสือของสมชาย ใจดี (ID = 1)
+ */
+
 import { NextResponse } from "next/server";
 import { getUserById } from "@/lib/users-store";
 import { getBooksByUserId } from "@/lib/books-store";
@@ -8,8 +19,11 @@ interface RouteParams {
 
 /**
  * GET /api/users/:id/books
- * ดึงรายการหนังสือทั้งหมดของสมาชิกคนนี้ (1 : N)
- * Response: 200 OK / 404 Not Found (กรณีไม่พบผู้ใช้)
+ * 
+ * Status Codes:
+ * • 200 OK: พบผู้ใช้ และส่งคืนรายการหนังสือของคนนั้น (อาจเป็นอาเรย์ว่างหากยังไม่มีหนังสือ)
+ * • 400 Bad Request: ID ไม่ใช่ตัวเลข
+ * • 404 Not Found: ไม่พบผู้ใช้งานรหัสนี้
  */
 export async function GET(request: Request, { params }: RouteParams) {
   try {
@@ -17,15 +31,25 @@ export async function GET(request: Request, { params }: RouteParams) {
     const id = Number(rawId);
 
     if (isNaN(id)) {
-      return NextResponse.json({ error: "ID ต้องเป็นตัวเลขเท่านั้น" }, { status: 400 });
+      return NextResponse.json(
+        { error: "รหัสผู้ใช้ (ID) ใน URL ต้องเป็นตัวเลขเท่านั้น" },
+        { status: 400 }
+      );
     }
 
+    // 1. ตรวจสอบว่ามีผู้ใช้นี้อยู่ในระบบหรือไม่
     const user = getUserById(id);
     if (!user) {
-      return NextResponse.json({ error: `ไม่พบผู้ใช้ ID = ${id}` }, { status: 404 });
+      return NextResponse.json(
+        { error: `ไม่พบผู้ใช้งาน ID = ${id} ในระบบ` },
+        { status: 404 }
+      );
     }
 
+    // 2. ดึงหนังสือทั้งหมดที่มี `userId === id`
     const books = getBooksByUserId(id);
+
+    // 3. ห่อ Response Object (Envelope) ให้มีทั้งข้อมูลผู้ใช้และรายการหนังสือ
     return NextResponse.json(
       {
         user: {
@@ -40,6 +64,9 @@ export async function GET(request: Request, { params }: RouteParams) {
     );
   } catch (error) {
     console.error("GET /api/users/:id/books error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์ในการดึงข้อมูลหนังสือของผู้ใช้" },
+      { status: 500 }
+    );
   }
 }

@@ -1,3 +1,15 @@
+/**
+ * ==============================================================================
+ * Component: BookModal (ฟอร์มเพิ่ม/แก้ไขหนังสือ)
+ * ==============================================================================
+ * คอมโพเนนต์ Modal Popup สำหรับจัดการข้อมูลหนังสือ:
+ * • รองรับ 2 โหมดใน Component เดียว:
+ *   - Create Mode (`bookToEdit === null`): เรียก `POST /api/books` (201 Created)
+ *   - Edit Mode (`bookToEdit !== null`): เรียก `PUT /api/books/:id` (200 OK)
+ * • ดึงรายชื่อสมาชิก (`GET /api/users`) มาแสดงใน `<select>` เพื่อผูก Foreign Key `userId`
+ * • มีคอมโพเนนต์ `FileUploader` สำหรับอัปโหลดและพรีวิวภาพหน้าปกหนังสือ
+ */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,11 +20,11 @@ import { FileUploader } from "@/components/file-uploader";
 import { X, BookPlus, Edit3, Loader2 } from "lucide-react";
 
 interface BookModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  bookToEdit?: Book | null;
-  defaultUserId?: number | null;
+  isOpen: boolean;                  // สถานะเปิด/ปิด Modal
+  onClose: () => void;              // ฟังก์ชันปิด Modal
+  onSuccess: () => void;            // ฟังก์ชัน Callback เมื่อบันทึกสำเร็จ (ให้หน้าหลักรีเฟรชข้อมูล)
+  bookToEdit?: Book | null;         // หนังสือที่ส่งมาแก้ไข (ถ้าไม่มี = สร้างใหม่)
+  defaultUserId?: number | null;    // รหัส User เริ่มต้นที่จะเลือกใน Dropdown (เช่น จาก Master Column)
 }
 
 export function BookModal({
@@ -25,7 +37,9 @@ export function BookModal({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form states
+  // ---------------------------------------------------------------------------
+  // Form Controlled States (สถานะของฟิลด์ในฟอร์ม)
+  // ---------------------------------------------------------------------------
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [userId, setUserId] = useState<number>(1);
@@ -33,9 +47,10 @@ export function BookModal({
   const [isAvailable, setIsAvailable] = useState(true);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
-  // Users dropdown
+  // รายชื่อผู้ใช้สำหรับใส่ใน Dropdown ให้เลือก Foreign Key userId
   const [users, setUsers] = useState<User[]>([]);
 
+  // 1. ดึงรายชื่อสมาชิกทั้งหมดเมื่อ Modal เปิดขึ้นมา
   useEffect(() => {
     if (isOpen) {
       fetch("/api/users")
@@ -43,6 +58,7 @@ export function BookModal({
         .then((data: User[]) => {
           if (Array.isArray(data)) {
             setUsers(data);
+            // ถ้าเป็นการสร้างใหม่ ให้ตั้งค่า defaultUserId ที่ส่งมา หรือคนแรกในระบบ
             if (!bookToEdit) {
               setUserId(defaultUserId || (data.length > 0 ? data[0].id : 1));
             }
@@ -52,6 +68,7 @@ export function BookModal({
     }
   }, [isOpen, defaultUserId, bookToEdit]);
 
+  // 2. เติมข้อมูลลงฟอร์ม (Prefill Form) เมื่ออยู่ในโหมดแก้ไข หรือล้างฟอร์มเมื่อโหมดสร้างใหม่
   useEffect(() => {
     if (bookToEdit) {
       setTitle(bookToEdit.title);
@@ -74,9 +91,13 @@ export function BookModal({
 
   const isEditing = Boolean(bookToEdit);
 
+  /**
+   * จัดการการ Submit ฟอร์ม
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // ตรวจสอบความถูกต้องเบื้องต้น (Client-side Validation)
     if (!title.trim() || !author.trim() || !userId) {
       toast({
         type: "error",
@@ -97,6 +118,7 @@ export function BookModal({
         coverUrl,
       };
 
+      // เลือกว่าจะส่งคำขอไปที่ URL และ Method ใด ตามโหมด (Create หรือ Edit)
       const url = isEditing && bookToEdit ? `/api/books/${bookToEdit.id}` : "/api/books";
       const method = isEditing ? "PUT" : "POST";
 
@@ -116,8 +138,8 @@ export function BookModal({
         status: isEditing ? 200 : 201,
       });
 
-      onSuccess();
-      onClose();
+      onSuccess(); // สั่งให้หน้าหลักอัปเดตข้อมูล
+      onClose();   // ปิด Modal
     } catch (err: unknown) {
       toast({
         type: "error",
@@ -133,7 +155,7 @@ export function BookModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
+        {/* Header Modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -157,84 +179,91 @@ export function BookModal({
           </button>
         </div>
 
-        {/* Form */}
+        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* User Select (Foreign Key: userId) */}
+          {/* ชื่อหนังสือ */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              สมาชิกเจ้าของหนังสือ (userId - Foreign Key) <span className="text-rose-500">*</span>
-            </label>
-            <select
-              value={userId}
-              onChange={(e) => setUserId(Number(e.target.value))}
-              required
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-            >
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  #{u.id} {u.name} ({u.email})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              ชื่อหนังสือ (title) <span className="text-rose-500">*</span>
+              ชื่อหนังสือ (Title) <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="เช่น Clean Code"
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="เช่น Clean Code, The Pragmatic Programmer"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                ชื่อผู้แต่ง (author) <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Robert C. Martin"
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+          {/* ชื่อผู้แต่ง */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              ชื่อผู้แต่ง (Author) <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="เช่น Robert C. Martin, Martin Fowler"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
+          {/* สมาชิกเจ้าของหนังสือ (Foreign Key userId) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              สมาชิกเจ้าของหนังสือ (Foreign Key: userId) <span className="text-rose-500">*</span>
+            </label>
+            <select
+              value={userId}
+              onChange={(e) => setUserId(Number(e.target.value))}
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            >
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  ID #{u.id}: {u.name} ({u.email})
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-slate-400 mt-1">
+              * ข้อมูลจะผูกกับสมาชิกคนนี้ และจะถูก Cascade Delete หากสมาชิกถูกลบ
+            </p>
+          </div>
+
+          {/* ปีที่พิมพ์ และ สถานะความพร้อม */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                ปีที่พิมพ์ (publishedYear)
+                ปีที่พิมพ์ (ค.ศ.)
               </label>
               <input
                 type="number"
                 value={publishedYear}
-                onChange={(e) => setPublishedYear(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="2008"
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onChange={(e) => setPublishedYear(e.target.value ? Number(e.target.value) : "")}
+                placeholder="2024"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                สถานะหนังสือ
+              </label>
+              <select
+                value={isAvailable ? "true" : "false"}
+                onChange={(e) => setIsAvailable(e.target.value === "true")}
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              >
+                <option value="true">พร้อมใช้งาน</option>
+                <option value="false">ไม่พร้อมใช้งาน</option>
+              </select>
             </div>
           </div>
 
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-700 mt-1">
-              <input
-                type="checkbox"
-                checked={isAvailable}
-                onChange={(e) => setIsAvailable(e.target.checked)}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
-              />
-              <span>สถานะ: {isAvailable ? "พร้อมใช้งาน (Available)" : "ไม่พร้อมใช้งาน (Unavailable)"}</span>
-            </label>
-          </div>
-
-          {/* File Upload Section */}
-          <div className="pt-2 border-t border-slate-100">
+          {/* คอมโพเนนต์อัปโหลดรูปภาพปก (File Upload) */}
+          <div className="pt-1">
             <FileUploader
               currentUrl={coverUrl}
               onUploadSuccess={(url) => setCoverUrl(url)}
@@ -242,23 +271,22 @@ export function BookModal({
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          {/* ปุ่มบันทึกและยกเลิก */}
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors disabled:opacity-50"
             >
-              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{isEditing ? "บันทึก (200 OK)" : "เพิ่มหนังสือ (201 Created)"}</span>
+              {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>{isEditing ? "บันทึกการแก้ไข" : "เพิ่มหนังสือ"}</span>
             </button>
           </div>
         </form>
