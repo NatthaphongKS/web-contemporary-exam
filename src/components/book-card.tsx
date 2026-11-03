@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Book } from "@/types/book";
 import {
@@ -25,8 +24,12 @@ interface BookCardProps {
 export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardProps) {
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all overflow-hidden group">
-      {/* Cover / Header Header */}
-      <div className="relative h-44 w-full bg-linear-to-br from-slate-100 to-indigo-50/50 flex items-center justify-center border-b border-slate-100 overflow-hidden">
+      {/* Cover / Header Header (คลิกเพื่อเปิด popup แก้ไข) */}
+      <div
+        onClick={() => onEdit(book)}
+        className="relative h-44 w-full bg-linear-to-br from-slate-100 to-indigo-50/50 flex items-center justify-center border-b border-slate-100 overflow-hidden cursor-pointer"
+        title="คลิกเพื่อแก้ไขหรือดูรายละเอียด"
+      >
         {book.coverUrl ? (
           <Image
             src={book.coverUrl}
@@ -72,13 +75,14 @@ export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardPro
       {/* Book Content */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <Link
-            href={`/books/${book.id}`}
-            className="block text-base font-bold text-slate-900 hover:text-indigo-600 line-clamp-1 transition-colors"
-            title={book.title}
+          <button
+            type="button"
+            onClick={() => onEdit(book)}
+            className="block text-left text-base font-bold text-slate-900 hover:text-indigo-600 line-clamp-1 transition-colors w-full cursor-pointer"
+            title="คลิกเพื่อแก้ไขหรือดูรายละเอียด"
           >
             {book.title}
-          </Link>
+          </button>
 
           <div className="mt-2 space-y-1 text-xs text-slate-600">
             <div className="flex items-center gap-1.5 truncate">

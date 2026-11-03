@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Book } from "@/types/book";
-import { Book as BookIcon, CheckCircle2, XCircle, Edit3, Trash2, ArrowRightLeft, ExternalLink, UserCheck } from "lucide-react";
+import { Book as BookIcon, CheckCircle2, XCircle, Edit3, Trash2, ArrowRightLeft, UserCheck } from "lucide-react";
 
 interface BookTableProps {
   books: Book[];
@@ -50,9 +49,13 @@ export function BookTable({
                 #{book.id}
               </td>
 
-              {/* Cover thumbnail */}
+              {/* Cover thumbnail (คลิกเพื่อเปิด popup แก้ไข) */}
               <td className="px-4 py-3">
-                <div className="relative w-12 h-16 rounded-md overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                <div
+                  onClick={() => onEdit(book)}
+                  className="relative w-12 h-16 rounded-md overflow-hidden bg-slate-100 border border-slate-200 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  title="คลิกเพื่อแก้ไขหรือดูรายละเอียด"
+                >
                   {book.coverUrl ? (
                     <Image
                       src={book.coverUrl}
@@ -69,15 +72,17 @@ export function BookTable({
                 </div>
               </td>
 
-              {/* Title & Detail Link */}
+              {/* Title & Edit Popup Button */}
               <td className="px-4 py-3 font-semibold text-slate-900">
-                <Link
-                  href={`/books/${book.id}`}
-                  className="inline-flex items-center gap-1.5 hover:text-indigo-600 transition-colors group"
+                <button
+                  type="button"
+                  onClick={() => onEdit(book)}
+                  className="inline-flex items-center gap-1.5 hover:text-indigo-600 transition-colors text-left group cursor-pointer"
+                  title="คลิกเพื่อแก้ไขหรือดูรายละเอียด"
                 >
                   <span>{book.title}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity" />
-                </Link>
+                  <Edit3 className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity" />
+                </button>
               </td>
 
               {/* Author */}

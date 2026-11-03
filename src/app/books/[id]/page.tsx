@@ -35,7 +35,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
   const [book, setBook] = useState<Book | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   // Fetch single book from GET /api/books/:id
   const fetchBook = async (isBackground = false) => {
@@ -333,11 +333,17 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
         </div>
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Modal (Popup แสดงผลทันทีตามที่พี่เคสต้องการ) */}
       <BookModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchBook}
+        onClose={() => {
+          setIsModalOpen(false);
+          router.push("/");
+        }}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          router.push("/");
+        }}
         bookToEdit={book}
       />
     </div>
