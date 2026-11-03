@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAllBooks, createBook } from "@/lib/books-store";
+import { userExists } from "@/lib/users-store";
 import { CreateBookDto } from "@/types/book";
 
 /**
  * GET /api/books
- * ดึงรายการหนังสือทั้งหมด (รองรับ query params: search, isAvailable)
+ * ดึงรายการหนังสือทั้งหมด (รองรับ query params: search, isAvailable, userId)
  * Response: 200 OK
  */
 export async function GET(request: Request) {
@@ -35,14 +36,14 @@ export async function GET(request: Request) {
 /**
  * POST /api/books
  * เพิ่มหนังสือเล่มใหม่
- * Body: { title, author, publishedYear, isAvailable?, coverUrl? }
- * Response: 201 Created (สำเร็จ), 400 Bad Request (ข้อมูลไม่ครบถ้วน)
+ * Body: { title, author, userId, coverUrl?, isAvailable?, publishedYear? }
+ * Response: 201 Created (สำเร็จ), 400 Bad Request (ข้อมูลไม่ครบถ้วน / Foreign Key ผิด)
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // ตรวจสอบความถูกต้องของข้อมูล (Validation)
+    // 1. ตรวจสอบชื่อหนังสือ (title)
     if (!body.title || typeof body.title !== "string" || body.title.trim() === "") {
       return NextResponse.json(
         { error: "กรุณาระบุชื่อหนังสือ (title)" },
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // 2. ตรวจสอบชื่อผู้แต่ง (author)
     if (!body.author || typeof body.author !== "string" || body.author.trim() === "") {
       return NextResponse.json(
         { error: "กรุณาระบุชื่อผู้แต่ง (author)" },
@@ -57,21 +59,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const publishedYear = Number(body.publishedYear);
-    if (!publishedYear || isNaN(publishedYear) || publishedYear < 1000 || publishedYear > 2100) {
+    // 3. ตรวจสอบ Foreign Key (userId ชี้กลับไปที่ Users)
+    if (body.userId === undefined || body.userId === null || isNaN(Number(body.userId))) {
       return NextResponse.json(
-        { error: "กรุณาระบุปีที่พิมพ์ให้ถูกต้อง (publishedYear เป็นตัวเลข ค.ศ.)" },
+        { error: "กรุณาระบุรหัสผู้ใช้เจ้าของหนังสือ (userId)" },
         { status: 400 }
       );
     }
 
+    const userId = Number(body.userId);
+    if (!userExists(userId)) {
+      return NextResponse.json(
+        { error: `ไม่พบผู้ใช้รหัส #${userId} ในระบบ (Foreign Key ไม่ถูกต้อง)` },
+        { status: 400 }
+      );
+    }
+
+    const publishedYear = body.publishedYear ? Number(body.publishedYear) : new Date().getFullYear();
+
     const dto: CreateBookDto = {
       title: body.title,
       author: body.author,
-      publishedYear,
-      isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : true,
+      userId,
       coverUrl: body.coverUrl || null,
-      userId: body.userId ? Number(body.userId) : null,
+      isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : true,
+      publishedYear,
     };
 
     const newBook = createBook(dto);

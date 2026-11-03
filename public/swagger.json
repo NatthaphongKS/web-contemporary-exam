@@ -251,29 +251,28 @@
     "schemas": {
       "Book": {
         "type": "object",
-        "required": ["id", "title", "author", "publishedYear", "isAvailable"],
+        "required": ["id", "title", "author", "userId", "isAvailable"],
         "properties": {
-          "id": { "type": "integer", "example": 1 },
+          "id": { "type": "integer", "example": 1, "description": "Primary Key" },
           "title": { "type": "string", "example": "Clean Code" },
           "author": { "type": "string", "example": "Robert C. Martin" },
+          "userId": { "type": "integer", "example": 1, "description": "Foreign Key ชี้กลับไปที่ Users (1:N)" },
+          "coverUrl": { "type": "string", "nullable": true, "example": "/uploads/cover-1.jpg", "description": "Path รูปภาพปกจาก File Upload" },
+          "isAvailable": { "type": "boolean", "example": true, "description": "สถานะการยืม" },
           "publishedYear": { "type": "integer", "example": 2008 },
-          "isAvailable": { "type": "boolean", "example": true },
-          "coverUrl": { "type": "string", "nullable": true, "example": null },
-          "userId": { "type": "integer", "nullable": true, "example": null },
-          "borrowedAt": { "type": "string", "format": "date-time", "nullable": true },
-          "borrowerName": { "type": "string", "nullable": true }
+          "userName": { "type": "string", "nullable": true, "example": "สมชาย ใจดี" }
         }
       },
       "CreateBookDto": {
         "type": "object",
-        "required": ["title", "author", "publishedYear"],
+        "required": ["title", "author", "userId"],
         "properties": {
           "title": { "type": "string", "example": "Design Patterns" },
-          "author": { "type": "string", "example": "GoF" },
-          "publishedYear": { "type": "integer", "example": 1994 },
-          "isAvailable": { "type": "boolean", "example": true },
-          "coverUrl": { "type": "string", "nullable": true },
-          "userId": { "type": "integer", "nullable": true }
+          "author": { "type": "string", "example": "Erich Gamma et al." },
+          "userId": { "type": "integer", "example": 1, "description": "Foreign Key ผู้ใช้เจ้าของหนังสือ" },
+          "coverUrl": { "type": "string", "nullable": true, "example": "/uploads/design-patterns.jpg" },
+          "isAvailable": { "type": "boolean", "default": true },
+          "publishedYear": { "type": "integer", "example": 1994 }
         }
       },
       "UpdateBookDto": {
@@ -281,21 +280,21 @@
         "properties": {
           "title": { "type": "string" },
           "author": { "type": "string" },
-          "publishedYear": { "type": "integer" },
-          "isAvailable": { "type": "boolean" },
+          "userId": { "type": "integer" },
           "coverUrl": { "type": "string", "nullable": true },
-          "userId": { "type": "integer", "nullable": true }
+          "isAvailable": { "type": "boolean" },
+          "publishedYear": { "type": "integer" }
         }
       },
       "User": {
         "type": "object",
-        "required": ["id", "name", "email", "role"],
+        "required": ["id", "name", "email"],
         "properties": {
-          "id": { "type": "integer", "example": 1 },
+          "id": { "type": "integer", "example": 1, "description": "Primary Key" },
           "name": { "type": "string", "example": "สมชาย ใจดี" },
-          "email": { "type": "string", "example": "somchai@example.com" },
+          "email": { "type": "string", "example": "somchai.j@example.com" },
           "role": { "type": "string", "enum": ["student", "teacher", "member"], "example": "student" },
-          "borrowedBooksCount": { "type": "integer", "example": 1 }
+          "booksCount": { "type": "integer", "example": 2, "description": "จำนวนหนังสือที่ครอบครอง (1:N)" }
         }
       },
       "CreateUserDto": {
@@ -303,7 +302,7 @@
         "required": ["name", "email"],
         "properties": {
           "name": { "type": "string", "example": "อลิสา มั่นคง" },
-          "email": { "type": "string", "example": "alisa@example.com" },
+          "email": { "type": "string", "example": "alisa.m@example.com" },
           "role": { "type": "string", "enum": ["student", "teacher", "member"], "default": "student" }
         }
       }

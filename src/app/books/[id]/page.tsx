@@ -20,6 +20,7 @@ import {
   AlertCircle,
   Clock,
   Code2,
+  UserCheck,
 } from "lucide-react";
 
 interface BookDetailPageProps {
@@ -277,6 +278,14 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                   <Calendar className="w-4 h-4 text-slate-400" />
                   <span className="font-medium text-slate-700">ปีที่พิมพ์ (ค.ศ.):</span>
                   <span className="font-mono">{book.publishedYear}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-indigo-500" />
+                  <span className="font-medium text-slate-700">ผู้ใช้ (userId):</span>
+                  <span className="font-mono text-indigo-700 font-semibold bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+                    #{book.userId} {book.userName ? `(${book.userName})` : ""}
+                  </span>
                 </div>
 
                 {book.createdAt && (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Book, CreateBookDto } from "@/types/book";
+import { User } from "@/types/user";
 import { useToast } from "@/components/toast";
 import { FileUploader } from "@/components/file-uploader";
 import { X, BookPlus, Edit3, Loader2 } from "lucide-react";
@@ -11,6 +12,7 @@ interface BookModalProps {
   onClose: () => void;
   onSuccess: () => void;
   bookToEdit?: Book | null;
+  defaultUserId?: number | null;
 }
 
 export function BookModal({
@@ -18,6 +20,7 @@ export function BookModal({
   onClose,
   onSuccess,
   bookToEdit,
+  defaultUserId,
 }: BookModalProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,16 +28,40 @@ export function BookModal({
   // Form states
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
+  const [userId, setUserId] = useState<number>(1);
   const [publishedYear, setPublishedYear] = useState<number | "">("");
   const [isAvailable, setIsAvailable] = useState(true);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+
+  // Users list for dropdown
+  const [users, setUsers] = useState<User[]>([]);
+
+  // Fetch users when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetch("/api/users")
+        .then((res) => res.json())
+        .then((data: User[]) => {
+          if (Array.isArray(data)) {
+            setUsers(data);
+            if (!bookToEdit && defaultUserId) {
+              setUserId(defaultUserId);
+            } else if (!bookToEdit && data.length > 0) {
+              setUserId(data[0].id);
+            }
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isOpen, defaultUserId, bookToEdit]);
 
   // Reset or fill data when modal opens
   useEffect(() => {
     if (bookToEdit) {
       setTitle(bookToEdit.title);
       setAuthor(bookToEdit.author);
-      setPublishedYear(bookToEdit.publishedYear);
+      setUserId(bookToEdit.userId);
+      setPublishedYear(bookToEdit.publishedYear || new Date().getFullYear());
       setIsAvailable(bookToEdit.isAvailable);
       setCoverUrl(bookToEdit.coverUrl || null);
     } else {
@@ -43,8 +70,11 @@ export function BookModal({
       setPublishedYear(new Date().getFullYear());
       setIsAvailable(true);
       setCoverUrl(null);
+      if (defaultUserId) {
+        setUserId(defaultUserId);
+      }
     }
-  }, [bookToEdit, isOpen]);
+  }, [bookToEdit, isOpen, defaultUserId]);
 
   if (!isOpen) return null;
 
@@ -53,11 +83,11 @@ export function BookModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !author.trim() || !publishedYear) {
+    if (!title.trim() || !author.trim() || !userId) {
       toast({
         type: "error",
         title: "กรุณากรอกข้อมูลให้ครบ",
-        message: "ชื่อหนังสือ, ชื่อผู้แต่ง และปีที่พิมพ์ ห้ามเว้นว่าง",
+        message: "ชื่อหนังสือ, ชื่อผู้แต่ง และผู้ใช้ (userId) ห้ามเว้นว่าง",
       });
       return;
     }
@@ -72,7 +102,8 @@ export function BookModal({
           body: JSON.stringify({
             title,
             author,
-            publishedYear: Number(publishedYear),
+            userId: Number(userId),
+            publishedYear: publishedYear ? Number(publishedYear) : new Date().getFullYear(),
             isAvailable,
             coverUrl,
           }),
@@ -94,7 +125,8 @@ export function BookModal({
         const payload: CreateBookDto = {
           title,
           author,
-          publishedYear: Number(publishedYear),
+          userId: Number(userId),
+          publishedYear: publishedYear ? Number(publishedYear) : new Date().getFullYear(),
           isAvailable,
           coverUrl,
         };
@@ -162,6 +194,28 @@ export function BookModal({
 
         {/* Modal Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* User Select (Foreign Key: userId) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              ผู้ใช้ / เจ้าของหนังสือ (userId - Foreign Key) <span className="text-rose-500">*</span>
+            </label>
+            <select
+              value={userId}
+              onChange={(e) => setUserId(Number(e.target.value))}
+              required
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+            >
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  #{u.id} {u.name} ({u.email})
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-slate-500 mt-1">
+              ตาราง Books เชื่อมโยงแบบ 1:N กับ Users ผ่าน Foreign Key <code className="font-mono text-indigo-600">userId</code>
+            </p>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               ชื่อหนังสือ (title) <span className="text-rose-500">*</span>
@@ -193,11 +247,10 @@ export function BookModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                ปีที่พิมพ์ (publishedYear) <span className="text-rose-500">*</span>
+                ปีที่พิมพ์ (publishedYear)
               </label>
               <input
                 type="number"
-                required
                 min={1000}
                 max={2100}
                 value={publishedYear}
@@ -209,7 +262,7 @@ export function BookModal({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                สถานะการยืม (isAvailable)
+                สถานะหนังสือ (isAvailable)
               </label>
               <div className="flex items-center h-10 px-3.5 rounded-xl border border-slate-300 bg-slate-50/50">
                 <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-700">
@@ -219,7 +272,7 @@ export function BookModal({
                     onChange={(e) => setIsAvailable(e.target.checked)}
                     className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
                   />
-                  <span>{isAvailable ? "พร้อมให้ยืม (Available)" : "ถูกยืมอยู่ (Borrowed)"}</span>
+                  <span>{isAvailable ? "พร้อมให้ยืม / ว่าง" : "ไม่ว่าง / กำลังถูกยืม"}</span>
                 </label>
               </div>
             </div>

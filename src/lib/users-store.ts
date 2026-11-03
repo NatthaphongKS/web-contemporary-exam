@@ -2,6 +2,7 @@ import { User, CreateUserDto, UpdateUserDto } from "@/types/user";
 
 /**
  * ข้อมูลจำลองผู้ใช้เริ่มต้น (Seed Users)
+ * ตารางที่ 1: Users (id, name, email)
  */
 const initialUsers: User[] = [
   {
@@ -9,7 +10,6 @@ const initialUsers: User[] = [
     name: "สมชาย ใจดี",
     email: "somchai.j@example.com",
     role: "student",
-    avatarUrl: null,
     createdAt: new Date("2026-01-10T09:00:00Z").toISOString(),
   },
   {
@@ -17,7 +17,6 @@ const initialUsers: User[] = [
     name: "อลิสา มั่นคง",
     email: "alisa.m@example.com",
     role: "student",
-    avatarUrl: null,
     createdAt: new Date("2026-01-12T11:30:00Z").toISOString(),
   },
   {
@@ -25,7 +24,6 @@ const initialUsers: User[] = [
     name: "Robert C. Martin",
     email: "unclebob@cleancode.org",
     role: "teacher",
-    avatarUrl: null,
     createdAt: new Date("2026-01-05T08:00:00Z").toISOString(),
   },
   {
@@ -33,7 +31,6 @@ const initialUsers: User[] = [
     name: "Dan Abramov",
     email: "dan@overreacted.io",
     role: "member",
-    avatarUrl: null,
     createdAt: new Date("2026-01-20T14:00:00Z").toISOString(),
   },
 ];
@@ -51,17 +48,20 @@ if (!globalThis.__libraryUsersStore) {
 }
 
 /**
- * ดึงรายชื่อผู้ใช้ทั้งหมด
+ * ดึงรายชื่อผู้ใช้ทั้งหมด (พร้อมคำนวณจำนวนหนังสือที่แต่ละคนมีแบบ 1:N)
  */
 export function getAllUsers(): User[] {
   const users = globalThis.__libraryUsersStore || [];
   const books = globalThis.__libraryBooksStore || [];
 
-  // คำนวณจำนวนหนังสือที่ยืมอยู่แบบ dynamic
-  return users.map((u) => ({
-    ...u,
-    borrowedBooksCount: books.filter((b) => b.userId === u.id).length,
-  }));
+  return users.map((u) => {
+    const count = books.filter((b) => b.userId === u.id).length;
+    return {
+      ...u,
+      booksCount: count,
+      borrowedBooksCount: count,
+    };
+  });
 }
 
 /**
@@ -72,9 +72,12 @@ export function getUserById(id: number): User | undefined {
   if (!user) return undefined;
 
   const books = globalThis.__libraryBooksStore || [];
+  const count = books.filter((b) => b.userId === user.id).length;
+
   return {
     ...user,
-    borrowedBooksCount: books.filter((b) => b.userId === user.id).length,
+    booksCount: count,
+    borrowedBooksCount: count,
   };
 }
 
@@ -91,6 +94,7 @@ export function createUser(dto: CreateUserDto): User {
     email: dto.email.trim(),
     role: dto.role || "student",
     avatarUrl: dto.avatarUrl || null,
+    booksCount: 0,
     borrowedBooksCount: 0,
     createdAt: new Date().toISOString(),
   };
@@ -123,25 +127,28 @@ export function updateUser(id: number, dto: UpdateUserDto): User | undefined {
 }
 
 /**
- * ลบผู้ใช้ (พร้อมคืนหนังสือทั้งหมดที่คนนี้ยืมอยู่ให้กลับเข้าห้องสมุด)
+ * ลบผู้ใช้ (พร้อมลบหนังสือที่ผูกกับ User คนนี้ตามหลัก Cascade Relation)
  */
 export function deleteUser(id: number): boolean {
   const users = globalThis.__libraryUsersStore || [];
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return false;
 
-  // คืนหนังสือที่ผู้ใช้คนนี้ยืมอยู่ (Cascade / Relational integrity)
+  // Cascade delete: ลบหนังสือทั้งหมดของ User คนนี้ออกจาก Store
   if (globalThis.__libraryBooksStore) {
-    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.map((book) =>
-      book.userId === id
-        ? { ...book, userId: null, isAvailable: true, borrowedAt: null }
-        : book
-    );
+    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.filter((book) => book.userId !== id);
   }
 
   users.splice(index, 1);
   globalThis.__libraryUsersStore = [...users];
   return true;
+}
+
+/**
+ * ตรวจสอบว่ามี User รหัสนี้ในระบบหรือไม่ (Foreign Key check)
+ */
+export function userExists(id: number): boolean {
+  return (globalThis.__libraryUsersStore || []).some((u) => u.id === id);
 }
 
 /**

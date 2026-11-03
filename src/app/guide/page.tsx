@@ -211,21 +211,24 @@ npm run dev`}
  */
 
 export interface Book {
-  id: number;              // รหัสประจำหนังสือ (Number)
-  title: string;           // ชื่อหนังสือ (String)
-  author: string;          // ชื่อผู้แต่ง (String)
-  publishedYear: number;   // ปีที่พิมพ์ (Number)
-  isAvailable: boolean;    // สถานะการยืม (Boolean)
-  coverUrl?: string | null;// ภาพปกหนังสือ (Optional - มาจาก File Upload)
-  createdAt?: string;      // วันที่เพิ่มข้อมูล
+  id: number;                   // รหัสประจำหนังสือ (Number - Primary Key)
+  title: string;                // ชื่อหนังสือ (String)
+  author: string;               // ชื่อผู้แต่ง (String)
+  userId: number;               // Foreign Key ชี้กลับไปที่ Users (1:N)
+  coverUrl: string | null;      // เก็บ Path รูป เช่น "/uploads/cover-1.jpg"
+  isAvailable: boolean;         // สถานะหนังสือ (Boolean: true = ว่าง, false = ไม่ว่าง)
+  publishedYear?: number;       // ปีที่พิมพ์ (Optional)
+  userName?: string | null;     // ชื่อ User เจ้าของหนังสือ (Populated helper)
+  createdAt?: string;           // วันที่เพิ่มข้อมูล
 }
 
 export type CreateBookDto = {
   title: string;
   author: string;
-  publishedYear: number;
-  isAvailable?: boolean;
+  userId: number;
   coverUrl?: string | null;
+  isAvailable?: boolean;
+  publishedYear?: number;
 };
 
 export type UpdateBookDto = Partial<CreateBookDto>;
@@ -1088,6 +1091,30 @@ const handleToggleStatus = async (id: number) => {
       {/* Tab 6: 2-Table Relations (Users & Books) */}
       {activeTab === "relations" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
+          {/* Schema Overview Box */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200">
+            <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+              <Users className="w-4 h-4 text-indigo-600" />
+              โครงสร้างความสัมพันธ์ 2 ตาราง (1 : N) ตามข้อสอบ
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+              <div className="p-3 bg-white rounded-xl border border-indigo-100 shadow-2xs">
+                <p className="font-bold text-slate-900 mb-1">[ ตารางที่ 1: Users ]</p>
+                <p className="text-slate-600">• id: Number (Primary Key)</p>
+                <p className="text-slate-600">• name: String</p>
+                <p className="text-slate-600">• email: String</p>
+              </div>
+              <div className="p-3 bg-white rounded-xl border border-indigo-100 shadow-2xs">
+                <p className="font-bold text-slate-900 mb-1">[ ตารางที่ 2: Books ]</p>
+                <p className="text-slate-600">• id: Number (Primary Key)</p>
+                <p className="text-slate-600">• title: String, author: String</p>
+                <p className="text-indigo-600 font-semibold">• userId: Number (Foreign Key ชี้กลับไปที่ Users)</p>
+                <p className="text-emerald-600 font-semibold">• coverUrl: String (เก็บ Path รูป เช่น &quot;/uploads/cover-1.jpg&quot;)</p>
+                <p className="text-slate-600">• isAvailable: Boolean</p>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">10</span>
@@ -1101,19 +1128,20 @@ const handleToggleStatus = async (id: number) => {
               title="src/types/user.ts (โค้ดจริงในโปรเจกต์)"
               language="typescript"
               code={`export interface User {
-  id: number;                   // รหัสประจำตัวผู้ใช้ (Number)
+  id: number;                  // รหัสประจำตัวผู้ใช้ (Number - Primary Key)
   name: string;                // ชื่อ-นามสกุล (String)
   email: string;               // อีเมล (String)
-  role: "student" | "teacher" | "member"; // บทบาท/ประเภทผู้ใช้
-  avatarUrl?: string | null;    // รูปโปรไฟล์ (Optional)
-  borrowedBooksCount?: number;  // จำนวนหนังสือที่ยืมอยู่ปัจจุบัน (Computed field)
-  createdAt?: string;           // วันที่สร้างบัญชี
+  role?: "student" | "teacher" | "member"; // บทบาท (Optional)
+  avatarUrl?: string | null;   // รูปโปรไฟล์ (Optional)
+  booksCount?: number;         // จำนวนหนังสือที่ครอบครอง (1:N)
+  borrowedBooksCount?: number; // Alias สำหรับความเข้ากันได้
+  createdAt?: string;          // วันที่สร้างข้อมูล
 }
 
 export type CreateUserDto = {
   name: string;
   email: string;
-  role: "student" | "teacher" | "member";
+  role?: "student" | "teacher" | "member";
   avatarUrl?: string | null;
 };
 

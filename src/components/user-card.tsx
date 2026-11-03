@@ -18,7 +18,8 @@ export function UserCard({
   onEdit,
   onDelete,
 }: UserCardProps) {
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (role?: string) => {
+    if (!role) return null;
     switch (role) {
       case "student":
         return (

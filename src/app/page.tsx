@@ -136,8 +136,6 @@ export default function LibraryDashboardPage() {
           ? {
               ...b,
               isAvailable: newStatus,
-              userId: newStatus ? null : (selectedUser ? selectedUser.id : 1),
-              borrowerName: newStatus ? null : (selectedUser ? selectedUser.name : "สมชาย ใจดี"),
             }
           : b
       )
@@ -570,6 +568,7 @@ export default function LibraryDashboardPage() {
         onClose={() => setIsBookModalOpen(false)}
         onSuccess={() => refreshAll(true)}
         bookToEdit={bookToEdit}
+        defaultUserId={selectedUser?.id}
       />
 
       {/* User Add/Edit Modal */}

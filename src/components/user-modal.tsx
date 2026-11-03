@@ -29,7 +29,7 @@ export function UserModal({
     if (userToEdit) {
       setName(userToEdit.name);
       setEmail(userToEdit.email);
-      setRole(userToEdit.role);
+      setRole(userToEdit.role || "student");
     } else {
       setName("");
       setEmail("");

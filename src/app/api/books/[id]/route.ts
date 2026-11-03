@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBookById, updateBook, deleteBook } from "@/lib/books-store";
+import { userExists } from "@/lib/users-store";
 import { UpdateBookDto } from "@/types/book";
 
 interface RouteParams {
@@ -44,7 +45,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 /**
  * PUT /api/books/:id
  * แก้ไขข้อมูลหนังสือตาม ID
- * Response: 200 OK (แก้ไขสำเร็จ), 404 Not Found (ไม่พบหนังสือ)
+ * Response: 200 OK (แก้ไขสำเร็จ), 404 Not Found (ไม่พบหนังสือ), 400 Bad Request
  */
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
@@ -81,6 +82,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
         return NextResponse.json({ error: "ชื่อผู้แต่งต้องไม่เป็นค่าว่าง" }, { status: 400 });
       }
       dto.author = body.author;
+    }
+
+    if (body.userId !== undefined) {
+      const uId = Number(body.userId);
+      if (isNaN(uId) || !userExists(uId)) {
+        return NextResponse.json({ error: `ไม่พบผู้ใช้รหัส #${body.userId} ในระบบ (Foreign Key ไม่ถูกต้อง)` }, { status: 400 });
+      }
+      dto.userId = uId;
     }
 
     if (body.publishedYear !== undefined) {
@@ -127,28 +136,24 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    const book = getBookById(id);
-    if (!book) {
+    const existing = getBookById(id);
+    if (!existing) {
       return NextResponse.json(
         { error: `ไม่พบหนังสือที่มี ID = ${id} เพื่อทำการลบ` },
         { status: 404 }
       );
     }
 
-    const success = deleteBook(id);
-    if (!success) {
+    const deleted = deleteBook(id);
+    if (!deleted) {
       return NextResponse.json(
-        { error: "ไม่สามารถลบหนังสือได้" },
+        { error: "เกิดข้อผิดพลาดในการลบข้อมูล" },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      {
-        message: "ลบข้อมูลหนังสือสำเร็จ",
-        deletedId: id,
-        deletedBook: book,
-      },
+      { message: `ลบหนังสือ ID = ${id} สำเร็จ`, deletedBook: existing },
       { status: 200 }
     );
   } catch (error) {

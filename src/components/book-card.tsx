@@ -90,13 +90,11 @@ export function BookCard({ book, onEdit, onDelete, onToggleStatus }: BookCardPro
               <span>ปีที่พิมพ์: {book.publishedYear}</span>
             </div>
 
-            {/* Borrower name if borrowed */}
-            {!book.isAvailable && book.borrowerName && (
-              <div className="flex items-center gap-1.5 pt-1 text-amber-700 font-medium truncate">
-                <UserCheck className="w-3.5 h-3.5 shrink-0 text-amber-600" />
-                <span className="truncate">ผู้ยืม: {book.borrowerName}</span>
-              </div>
-            )}
+            {/* User / Owner (Foreign Key: userId) */}
+            <div className="flex items-center gap-1.5 pt-1 text-indigo-700 font-medium truncate">
+              <UserCheck className="w-3.5 h-3.5 shrink-0 text-indigo-600" />
+              <span className="truncate">ผู้ใช้: #{book.userId} {book.userName || ""}</span>
+            </div>
           </div>
         </div>
 

@@ -38,8 +38,8 @@ export function BookTable({
             <th className="px-4 py-3.5">ชื่อหนังสือ</th>
             <th className="px-4 py-3.5">ผู้แต่ง</th>
             <th className="px-4 py-3.5 text-center w-24">ปีที่พิมพ์</th>
-            <th className="px-4 py-3.5 text-center w-36">สถานะการยืม</th>
-            <th className="px-4 py-3.5 w-36">ผู้ยืมปัจจุบัน</th>
+            <th className="px-4 py-3.5 text-center w-36">สถานะหนังสือ</th>
+            <th className="px-4 py-3.5 w-44">ผู้ใช้ (userId)</th>
             <th className="px-4 py-3.5 text-right w-36">การจัดการ</th>
           </tr>
         </thead>
@@ -113,15 +113,15 @@ export function BookTable({
                 </span>
               </td>
 
-              {/* Borrower Name */}
+              {/* User / Owner (Foreign Key: userId) */}
               <td className="px-4 py-3 text-xs">
-                {book.borrowerName ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                    <UserCheck className="w-3 h-3 text-amber-600" />
-                    <span>{book.borrowerName}</span>
+                {book.userName ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium bg-indigo-50 text-indigo-800 border border-indigo-200">
+                    <UserCheck className="w-3 h-3 text-indigo-600" />
+                    <span>#{book.userId} {book.userName}</span>
                   </span>
                 ) : (
-                  <span className="text-slate-400">-</span>
+                  <span className="text-slate-400 font-mono">#{book.userId}</span>
                 )}
               </td>
 
