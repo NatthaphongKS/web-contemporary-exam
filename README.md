@@ -1,30 +1,32 @@
 # Next.js Library Management & Practical Web Exam Cheatsheet 📚✨
 
-โปรเจกต์ Next.js (App Router) สำหรับเตรียมสอบปฏิบัติวิชา Web: ระบบจัดการสมาชิกและหนังสือในห้องสมุด (2 ตารางสัมพันธ์ Users & Books 1:N) พร้อม In-Memory Mock Store, RESTful API (CRUD), File Upload, Master-Detail UI และหน้า Static Study Guide (`/guide`) รวมขั้นตอนและคำสั่งคัดลอก (1-Click Copy)
+โปรเจกต์ Next.js (App Router + TypeScript + Tailwind CSS) สำหรับเตรียมสอบปฏิบัติวิชา Web: ระบบจัดการสมาชิกและหนังสือในห้องสมุด (2 ตารางสัมพันธ์ Users & Books 1:N) พร้อม In-Memory Mock Store (`globalThis`), RESTful API (CRUD), File Upload, Master-Detail Dashboard, และหน้า Static Study Guide (`/guide`) รวมขั้นตอนและคำสั่งคัดลอก (1-Click Copy)
 
 ---
 
 ## 🌟 คุณสมบัติเด่นของโปรเจกต์
 
 1. **2 ตารางสัมพันธ์ (Relational Data 1:N)**:
-   - ตาราง `users`: เก็บข้อมูลสมาชิกห้องสมุด (id, name, email, role, borrowedBooksCount)
-   - ตาราง `books`: เชื่อมต่อผ่าน Foreign Key `userId` ระบุว่าใครเป็นผู้ยืม
+   - ตาราง `users` (ตารางที่ 1): เก็บข้อมูลสมาชิกห้องสมุด (`id`, `name`, `email`, `booksCount`)
+   - ตาราง `books` (ตารางที่ 2): เชื่อมต่อผ่าน Foreign Key `userId` ระบุสมาชิกผู้ถือครองหนังสือ
+   - ระบบตรวจสอบ Foreign Key: ป้องกันการสร้างหนังสือที่ระบุ `userId` ไม่มีตัวตนในระบบ
+   - ระบบ Cascade Delete: เมื่อลบสมาชิก หนังสือทั้งหมดของคนนั้นจะถูกลบออกจากระบบโดยอัตโนมัติ
 2. **Master-Detail Interactive UI**:
-   - ด้านซ้าย: รายชื่อสมาชิกทั้งหมด คลิกเลือกคนไหน ด้านขวาจะแสดงเฉพาะหนังสือที่คนนั้นถือครองอยู่ทันที
-   - ปุ่มลัด **"ยืมหนังสือให้คนนี้"**: เลือกจากหนังสือที่ว่างในระบบมากำหนดสิทธิ์ให้ผู้ใช้
-   - ปุ่มลัด **"คืนหนังสือ"**: ปลดสถานะกลับสู่ห้องสมุดทันที
-   - ปุ่ม **"ดูหนังสือทั้งหมดในห้องสมุด"**: สลับกลับมาดูภาพรวมทุกเล่ม
+   - ด้านซ้าย (Master Column): รายชื่อสมาชิกทั้งหมด คลิกเลือกคนไหน ด้านขวาจะแสดงเฉพาะหนังสือที่คนนั้นถือครองอยู่ทันที
+   - ปุ่ม **"ดูหนังสือทั้งหมด (ทุกคน)"**: ล้างตัวกรองเพื่อกลับมาดูภาพรวมหนังสือทุกเล่มในระบบ
+   - การ์ดสมาชิกแสดง Badge นับจำนวนหนังสือที่ถือครองอยู่แบบ Real-time
 3. **In-Memory Store (ไม่ต้องต่อฐานข้อมูลจริง)**:
-   - ข้อมูลทั้งหมดเก็บใน RAM ผ่าน `globalThis` พร้อม Seed Users 4 คน และ Seed Books 5 เล่ม
-4. **RESTful API สมบูรณ์ตามข้อกำหนด**:
-   - **Users API**: `GET /api/users`, `POST /api/users`, `GET/PUT/DELETE /api/users/:id`, `GET /api/users/:id/books`
-   - **Books API**: `GET /api/books` (รองรับ filter `?userId=`), `POST /api/books`, `GET/PUT/DELETE /api/books/:id`
-   - **Borrow/Return API**: `POST /api/books/:id/borrow`, `POST /api/books/:id/return`
-   - **Upload API**: `POST /api/upload` (บันทึกรูปภาพลง `public/uploads/`)
+   - ข้อมูลทั้งหมดเก็บใน RAM ผ่าน `globalThis` ป้องกันการสูญหายของข้อมูลเมื่อ Next.js ทำ Fast Refresh
+   - มี Seed Users 3 คน และ Seed Books 4 เล่ม พร้อมใช้งานได้ทันทีเมื่อเปิดเครื่อง
+4. **RESTful API สมบูรณ์ตามมาตรฐาน**:
+   - **Users API**: `GET /api/users`, `POST /api/users`, `GET /api/users/:id`, `PUT /api/users/:id`, `DELETE /api/users/:id` (Cascade)
+   - **Relational 1:N API**: `GET /api/users/:id/books` (ดึงหนังสือเฉพาะของสมาชิกคนนั้น)
+   - **Books API**: `GET /api/books` (รองรับ Query filters: `?search=`, `?isAvailable=`, `?userId=`), `POST /api/books` (ตรวจ FK), `GET /api/books/:id`, `PUT /api/books/:id`, `DELETE /api/books/:id`
+   - **Upload API**: `POST /api/upload` (รับไฟล์ภาพ `multipart/form-data` บันทึกลง `public/uploads/`)
 5. **Optimistic Updates & Silent Background Sync**:
-   - อัปเดต UI ทันทีในระดับมิลลิวินาที หน้าจอไม่กระตุก ไม่เกิด Layout Shift และ sync ข้อมูลกับเซิร์ฟเวอร์ใน background
+   - สลับสถานะหนังสือ (`isAvailable`) และลบหนังสือแบบ Optimistic Update ทันทีในระดับมิลลิวินาที หน้าจอไม่กระตุก ไม่เกิด Layout Shift และ sync ข้อมูลกับเซิร์ฟเวอร์ใน Background พร้อม Rollback อัตโนมัติหากเกิดข้อผิดพลาด
 6. **หน้า Static Study Guide (`/guide`)**:
-   - คู่มือติวสอบ 8 หัวข้อ พร้อมคำสั่ง Shell, โค้ดจริงทุกไฟล์, และคำสั่ง cURL พร้อมปุ่ม 1-Click Copy
+   - คู่มือติวสอบ 8 หัวข้อ พร้อมแบนเนอร์ **6 ขั้นตอนปฏิบัติจริงในห้องสอบ (Step-by-Step Roadmap)**, โค้ดจริงทุกไฟล์, และคำสั่ง cURL พร้อมปุ่ม 1-Click Copy
 
 ---
 
@@ -51,52 +53,72 @@ npm run start
 
 ## 📡 สรุป API Endpoints & Status Codes
 
-### หมวด Users (สมาชิก)
+### หมวด Users (ตารางที่ 1: สมาชิก)
 | Method | Endpoint | รายละเอียด | Status Code |
 |---|---|---|---|
-| `GET` | `/api/users` | ดึงสมาชิกทั้งหมด พร้อมจำนวนหนังสือที่ยืมอยู่ | `200 OK` |
+| `GET` | `/api/users` | ดึงสมาชิกทั้งหมด พร้อมจำนวนหนังสือที่ถือครอง | `200 OK` |
 | `GET` | `/api/users/:id` | ดึงข้อมูลสมาชิกตาม ID | `200 OK` / `404 Not Found` |
-| `POST` | `/api/users` | เพิ่มสมาชิกใหม่ (`{ name, email, role }`) | `201 Created` / `400 Bad Request` |
+| `POST` | `/api/users` | เพิ่มสมาชิกใหม่ (`{ name, email }`) | `201 Created` / `400 Bad Request` |
 | `PUT` | `/api/users/:id` | แก้ไขข้อมูลสมาชิก | `200 OK` / `404 Not Found` |
-| `DELETE` | `/api/users/:id` | ลบสมาชิก (และคืนหนังสือที่คนนั้นยืมอยู่) | `200 OK` / `404 Not Found` |
-| `GET` | `/api/users/:id/books` | ดึงหนังสือเฉพาะที่สมาชิกคนนี้ยืมอยู่ | `200 OK` / `404 Not Found` |
+| `DELETE` | `/api/users/:id` | ลบสมาชิก และ Cascade ลบหนังสือของสมาชิกนี้ทั้งหมด | `200 OK` / `404 Not Found` |
+| `GET` | `/api/users/:id/books` | ดึงหนังสือเฉพาะที่สมาชิกคนนี้ถือครอง (1:N) | `200 OK` / `404 Not Found` |
 
-### หมวด Books (หนังสือ) & การยืม/คืน
+### หมวด Books (ตารางที่ 2: หนังสือ)
 | Method | Endpoint | รายละเอียด | Status Code |
 |---|---|---|---|
 | `GET` | `/api/books` | ดึงหนังสือทั้งหมด (รองรับ `?search=`, `?isAvailable=`, `?userId=`) | `200 OK` |
 | `GET` | `/api/books/:id` | ดึงหนังสือตาม ID | `200 OK` / `404 Not Found` |
-| `POST` | `/api/books` | เพิ่มหนังสือเล่มใหม่ | `201 Created` / `400 Bad Request` |
-| `PUT` | `/api/books/:id` | แก้ไขข้อมูลหนังสือ | `200 OK` / `404 Not Found` |
+| `POST` | `/api/books` | เพิ่มหนังสือใหม่ (ต้องระบุ `title`, `author`, `userId`) | `201 Created` / `400 Bad Request` |
+| `PUT` | `/api/books/:id` | แก้ไขข้อมูลหนังสือ (รองรับ Partial update) | `200 OK` / `404 Not Found` |
 | `DELETE` | `/api/books/:id` | ลบหนังสือออกจากระบบ | `200 OK` / `404 Not Found` |
-| `POST` | `/api/books/:id/borrow` | ยืมหนังสือให้สมาชิก (`{ userId: number }`) | `200 OK` / `400 Bad Request` |
-| `POST` | `/api/books/:id/return` | คืนหนังสือกลับเข้าห้องสมุด | `200 OK` / `404 Not Found` |
-| `POST` | `/api/upload` | อัปโหลดรูปภาพปกหนังสือ (`FormData`) | `201 Created` / `400 Bad Request` |
+| `POST` | `/api/upload` | อัปโหลดรูปภาพปกหนังสือ (`multipart/form-data`) | `201 Created` / `400 Bad Request` |
 
 ---
 
-## 🧪 ตัวอย่างคำสั่ง cURL สำหรับทดสอบ
+## 🧪 ตัวอย่างคำสั่ง cURL สำหรับทดสอบ API
 
 ```bash
 # 1. ดึงรายชื่อสมาชิกทั้งหมด (200 OK)
 curl -X GET http://localhost:3000/api/users
 
-# 2. ดึงหนังสือที่สมาชิก ID #1 ยืมอยู่ (200 OK)
+# 2. เพิ่มสมาชิกใหม่ (201 Created)
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "วีระชัย รักเรียน", "email": "veerachai.r@example.com"}'
+
+# 3. ดึงหนังสือเฉพาะของสมาชิก ID #1 (200 OK)
 curl -X GET http://localhost:3000/api/users/1/books
 
-# 3. ยืมหนังสือ ID #1 ให้สมาชิก ID #2 (200 OK)
-curl -X POST http://localhost:3000/api/books/1/borrow \
-  -H "Content-Type: application/json" \
-  -d '{"userId": 2}'
-
-# 4. คืนหนังสือ ID #1 (200 OK)
-curl -X POST http://localhost:3000/api/books/1/return
-
-# 5. ดึงหนังสือทั้งหมด (200 OK)
+# 4. ดึงรายการหนังสือทั้งหมด (200 OK)
 curl -X GET http://localhost:3000/api/books
 
-# 6. อัปโหลดไฟล์รูปภาพ (201 Created)
+# 5. เพิ่มหนังสือใหม่ โดยผูกกับสมาชิก ID #1 (201 Created)
+curl -X POST http://localhost:3000/api/books \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Clean Architecture",
+    "author": "Robert C. Martin",
+    "userId": 1,
+    "publishedYear": 2017,
+    "isAvailable": true
+  }'
+
+# 6. ดึงหนังสือตาม ID #1 (200 OK)
+curl -X GET http://localhost:3000/api/books/1
+
+# 7. สลับสถานะหนังสือ (PUT 200 OK)
+curl -X PUT http://localhost:3000/api/books/1 \
+  -H "Content-Type: application/json" \
+  -d '{"isAvailable": false}'
+
+# 8. อัปโหลดไฟล์รูปภาพหน้าปก (201 Created)
 curl -X POST http://localhost:3000/api/upload -F "file=@/path/to/cover.png"
+
+# 9. ลบหนังสือ (DELETE 200 OK)
+curl -X DELETE http://localhost:3000/api/books/1
+
+# 10. ลบสมาชิก ID #1 พร้อมทดสอบ Cascade Delete หนังสือ (DELETE 200 OK)
+curl -X DELETE http://localhost:3000/api/users/1
 ```
 
 ---
@@ -109,47 +131,41 @@ projects/web-contemporary-exam/
 │   └── uploads/                  # โฟลเดอร์เก็บไฟล์ภาพที่อัปโหลด
 ├── src/
 │   ├── types/
-│   │   ├── book.ts               # Interface Book, DTOs
-│   │   └── user.ts               # Interface User, DTOs
+│   │   ├── user.ts               # Interface User, DTOs (ตารางที่ 1)
+│   │   └── book.ts               # Interface Book, DTOs (ตารางที่ 2 มี FK userId)
 │   ├── lib/
-│   │   ├── books-store.ts        # In-Memory Database หนังสือ + ยืม/คืน
-│   │   └── users-store.ts        # In-Memory Database สมาชิก
+│   │   ├── users-store.ts        # In-Memory Database สมาชิก + Cascade Delete
+│   │   └── books-store.ts        # In-Memory Database หนังสือ + 1:N Foreign Key
 │   ├── components/
 │   │   ├── navbar.tsx            # Header Navigation
-│   │   ├── user-card.tsx         # การ์ดแสดงสมาชิกและจำนวนเล่มที่ยืม
+│   │   ├── user-card.tsx         # การ์ดแสดงสมาชิก (Master Column ฝั่งซ้าย)
 │   │   ├── user-modal.tsx        # Modal เพิ่ม/แก้ไขสมาชิก
-│   │   ├── borrow-modal.tsx      # Modal เลือกหนังสือว่างมายืมให้สมาชิก
-│   │   ├── book-card.tsx         # Card View หนังสือ
-│   │   ├── book-table.tsx        # Table View หนังสือ
+│   │   ├── book-card.tsx         # การ์ดแสดงหนังสือ (Detail Column ฝั่งขวา)
+│   │   ├── book-table.tsx        # ตารางแสดงหนังสือ (Table View)
 │   │   ├── book-modal.tsx        # Modal เพิ่ม/แก้ไขหนังสือ
-│   │   ├── file-uploader.tsx     # File Upload Component with Preview
+│   │   ├── file-uploader.tsx     # File Upload Component พร้อม Instant Preview
 │   │   ├── toast.tsx             # Notification Toast (HTTP Status)
-│   │   └── code-block.tsx        # 1-Click Copy Code Box
+│   │   └── code-block.tsx        # กล่องโค้ดพร้อมปุ่ม 1-Click Copy
 │   └── app/
 │       ├── layout.tsx            # Root Layout
 │       ├── globals.css           # Tailwind CSS
 │       ├── page.tsx              # Master-Detail Dashboard (หน้าหลัก)
-│       ├── books/
-│       │   └── [id]/
-│       │       └── page.tsx      # Single Book Detail View
 │       ├── guide/
-│       │   └── page.tsx          # Step-by-Step Study Guide
+│       │   └── page.tsx          # Step-by-Step Study Guide (คู่มือเตรียมสอบ)
+│       ├── openapi-guide/
+│       │   └── page.tsx          # คู่มือ OpenAPI / Swagger & Postman
 │       └── api/
 │           ├── users/
 │           │   ├── route.ts      # GET /api/users, POST /api/users
 │           │   └── [id]/
-│           │       ├── route.ts  # GET, PUT, DELETE /api/users/[id]
+│           │       ├── route.ts  # GET, PUT, DELETE /api/users/[id] (Cascade)
 │           │       └── books/
-│           │           └── route.ts # GET /api/users/[id]/books
+│           │           └── route.ts # GET /api/users/[id]/books (1:N Relations)
 │           ├── books/
-│           │   ├── route.ts      # GET /api/books, POST /api/books
+│           │   ├── route.ts      # GET /api/books (Filters), POST /api/books (FK check)
 │           │   └── [id]/
-│           │       ├── route.ts  # GET, PUT, DELETE /api/books/[id]
-│           │       ├── borrow/
-│           │       │   └── route.ts # POST /api/books/[id]/borrow
-│           │       └── return/
-│           │           └── route.ts # POST /api/books/[id]/return
+│           │       └── route.ts  # GET, PUT, DELETE /api/books/[id]
 │           └── upload/
-│               └── route.ts      # POST /api/upload
+│               └── route.ts      # POST /api/upload (FormData File Upload)
 └── package.json
 ```

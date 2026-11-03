@@ -16,11 +16,15 @@ import {
   Zap,
   ArrowRight,
   ExternalLink,
+  CheckCircle2,
+  ListOrdered,
+  BookOpen,
+  Database,
 } from "lucide-react";
 
 export default function StudyGuidePage() {
   const [activeTab, setActiveTab] = useState<
-    "setup" | "model" | "api" | "upload" | "frontend" | "curl" | "pitfalls" | "relations"
+    "setup" | "model" | "api" | "upload" | "frontend" | "relations" | "curl" | "pitfalls"
   >("setup");
 
   return (
@@ -37,8 +41,8 @@ export default function StudyGuidePage() {
           คู่มือเตรียมสอบปฏิบัติวิชา Web (Step-by-Step Cheatsheet)
         </h1>
         <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-          สรุปขั้นตอนและโค้ดฉบับเต็มเหมือนโค้ดจริงในโปรเจกต์ทุกประการ: การสร้างโปรเจกต์ Next.js, การจำลองข้อมูล In-Memory Store,
-          การสร้าง RESTful API (CRUD) ครบทุก Status Code, การทำ File Upload, และตัวอย่างคำสั่ง cURL พร้อมปุ่มกดคัดลอก (1-Click Copy)
+          สรุปขั้นตอนและโค้ดฉบับเต็มเหมือนโค้ดจริงในโปรเจกต์ทุกประการ: ระบบ 2 ตารางสัมพันธ์ (Users & Books 1:N), การจำลองข้อมูล In-Memory Store ด้วย globalThis,
+          การสร้าง RESTful API (CRUD) ครบทุก Status Code, การทำ File Upload, Master-Detail Dashboard, และตัวอย่างคำสั่ง cURL พร้อมปุ่มกดคัดลอก (1-Click Copy)
         </p>
 
         {/* GitHub Link */}
@@ -60,8 +64,73 @@ export default function StudyGuidePage() {
           </a>
         </div>
 
+        {/* 6-Step Exam Roadmap Banner */}
+        <div className="mt-5 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200">
+          <div className="flex items-center gap-2 mb-2">
+            <ListOrdered className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-sm font-bold text-indigo-900">
+              6 ขั้นตอนปฏิบัติจริงในห้องสอบ (Recommended Exam Workflow)
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+            <button
+              onClick={() => setActiveTab("setup")}
+              className="p-2.5 rounded-xl bg-white border border-indigo-100 hover:border-indigo-400 hover:shadow-2xs text-left transition-all group"
+            >
+              <span className="font-bold text-indigo-600 block mb-0.5">Step 1</span>
+              <span className="font-semibold text-slate-800 block">Setup & Folder</span>
+              <span className="text-[11px] text-slate-500">สร้างโปรเจกต์ & จัดโฟลเดอร์</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("model")}
+              className="p-2.5 rounded-xl bg-white border border-indigo-100 hover:border-indigo-400 hover:shadow-2xs text-left transition-all group"
+            >
+              <span className="font-bold text-indigo-600 block mb-0.5">Step 2</span>
+              <span className="font-semibold text-slate-800 block">Model & Store</span>
+              <span className="text-[11px] text-slate-500">2 ตาราง + globalThis</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("api")}
+              className="p-2.5 rounded-xl bg-white border border-indigo-100 hover:border-indigo-400 hover:shadow-2xs text-left transition-all group"
+            >
+              <span className="font-bold text-indigo-600 block mb-0.5">Step 3</span>
+              <span className="font-semibold text-slate-800 block">RESTful APIs</span>
+              <span className="text-[11px] text-slate-500">CRUD + Status Codes</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("upload")}
+              className="p-2.5 rounded-xl bg-white border border-indigo-100 hover:border-indigo-400 hover:shadow-2xs text-left transition-all group"
+            >
+              <span className="font-bold text-indigo-600 block mb-0.5">Step 4</span>
+              <span className="font-semibold text-slate-800 block">File Upload</span>
+              <span className="text-[11px] text-slate-500">FormData & public/uploads</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("curl")}
+              className="p-2.5 rounded-xl bg-white border border-indigo-100 hover:border-indigo-400 hover:shadow-2xs text-left transition-all group"
+            >
+              <span className="font-bold text-indigo-600 block mb-0.5">Step 5</span>
+              <span className="font-semibold text-slate-800 block">cURL / Testing</span>
+              <span className="text-[11px] text-slate-500">ยิงทดสอบครบทุก Status</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("frontend")}
+              className="p-2.5 rounded-xl bg-white border border-indigo-100 hover:border-indigo-400 hover:shadow-2xs text-left transition-all group"
+            >
+              <span className="font-bold text-indigo-600 block mb-0.5">Step 6</span>
+              <span className="font-semibold text-slate-800 block">Master-Detail UI</span>
+              <span className="text-[11px] text-slate-500">Optimistic State Update</span>
+            </button>
+          </div>
+        </div>
+
         {/* OpenAPI Banner Tip */}
-        <div className="mt-4 p-3.5 rounded-xl bg-linear-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-200 flex items-center justify-between gap-3 flex-wrap">
+        <div className="mt-3.5 p-3.5 rounded-xl bg-linear-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-200 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800">
             <Zap className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>
@@ -109,7 +178,9 @@ export default function StudyGuidePage() {
         })}
       </div>
 
-      {/* Tab 1: Setup & Config */}
+      {/* ==================================================================== */}
+      {/* Tab 1: Setup & Config                                                */}
+      {/* ==================================================================== */}
       {activeTab === "setup" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
@@ -149,40 +220,51 @@ npm run dev`}
             />
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
-              <p className="font-semibold text-slate-800">โครงสร้างไฟล์โปรเจกต์จริง (File Structure):</p>
+              <p className="font-semibold text-slate-800">
+                โครงสร้างไฟล์โปรเจกต์จริงแบบ 2 ตารางสัมพันธ์ (2-Table Master-Detail Structure):
+              </p>
               <pre className="font-mono text-slate-700">
 {`my-library-exam/
 ├── public/
-│   └── uploads/                  # โฟลเดอร์เก็บไฟล์ภาพที่อัปโหลด
+│   └── uploads/                  # โฟลเดอร์เก็บไฟล์ภาพที่อัปโหลด (Static Files)
 ├── src/
 │   ├── types/
-│   │   └── book.ts               # Data Model & DTOs
+│   │   ├── user.ts               # Data Model ตารางที่ 1: Users & DTOs
+│   │   └── book.ts               # Data Model ตารางที่ 2: Books & DTOs
 │   ├── lib/
-│   │   └── books-store.ts        # In-Memory Database จำลอง
+│   │   ├── users-store.ts        # In-Memory Store สมาชิก (globalThis + Cascade Delete)
+│   │   └── books-store.ts        # In-Memory Store หนังสือ (globalThis + 1:N Foreign Key)
 │   ├── components/
 │   │   ├── navbar.tsx            # Header Navigation
-│   │   ├── book-card.tsx         # Card View
-│   │   ├── book-table.tsx        # Table View
-│   │   ├── book-modal.tsx        # Form Modal เพิ่ม/แก้ไข
-│   │   ├── file-uploader.tsx     # คอมโพเนนต์อัปโหลดไฟล์
+│   │   ├── user-card.tsx         # การ์ดแสดงสมาชิก (Master Column ฝั่งซ้าย)
+│   │   ├── user-modal.tsx        # Modal เพิ่ม/แก้ไขสมาชิก
+│   │   ├── book-card.tsx         # การ์ดแสดงหนังสือ (Detail Column ฝั่งขวา)
+│   │   ├── book-table.tsx        # ตารางแสดงหนังสือ (Table View)
+│   │   ├── book-modal.tsx        # Modal เพิ่ม/แก้ไขหนังสือ (พร้อม Dropdown เลือก User)
+│   │   ├── file-uploader.tsx     # คอมโพเนนต์อัปโหลดรูปภาพพร้อม Preview
 │   │   ├── toast.tsx             # Notification Toast (HTTP Status)
 │   │   └── code-block.tsx        # กล่องโค้ดพร้อมปุ่ม 1-Click Copy
 │   └── app/
 │       ├── layout.tsx            # Root Layout
 │       ├── globals.css           # Tailwind CSS
-│       ├── page.tsx              # Library Dashboard (หน้าหลัก)
-│       ├── books/
-│       │   └── [id]/
-│       │       └── page.tsx      # รายละเอียดหนังสือรายเล่ม (GET by ID)
+│       ├── page.tsx              # Master-Detail Dashboard (หน้าหลัก)
 │       ├── guide/
 │       │   └── page.tsx          # หน้าคู่มือเตรียมสอบ
+│       ├── openapi-guide/
+│       │   └── page.tsx          # หน้าคู่มือ OpenAPI & Swagger
 │       └── api/
+│           ├── users/
+│           │   ├── route.ts      # GET /api/users, POST /api/users
+│           │   └── [id]/
+│           │       ├── route.ts  # GET, PUT, DELETE /api/users/[id] (Cascade)
+│           │       └── books/
+│           │           └── route.ts # GET /api/users/[id]/books (1 : N Endpoint)
 │           ├── books/
-│           │   ├── route.ts      # GET /api/books, POST /api/books
+│           │   ├── route.ts      # GET /api/books (filters), POST /api/books (FK check)
 │           │   └── [id]/
 │           │       └── route.ts  # GET, PUT, DELETE /api/books/[id]
 │           └── upload/
-│               └── route.ts      # POST /api/upload
+│               └── route.ts      # POST /api/upload (FormData File Upload)
 └── package.json`}
               </pre>
             </div>
@@ -190,36 +272,50 @@ npm run dev`}
         </section>
       )}
 
-      {/* Tab 2: Data Model & Store */}
+      {/* ==================================================================== */}
+      {/* Tab 2: Data Model & Store                                            */}
+      {/* ==================================================================== */}
       {activeTab === "model" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">2</span>
-              โค้ดจริง: Data Model (src/types/book.ts)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">2.1</span>
+              Data Models: ตารางที่ 1 (src/types/user.ts) & ตารางที่ 2 (src/types/book.ts)
             </h2>
             <p className="text-sm text-slate-600">
-              กำหนด Interface ของข้อมูลหนังสือ, DTO สำหรับ Create/Update และ ApiResponse Type:
+              กำหนด Interface ของ Entity ทั้ง 2 ตาราง พร้อม DTOs สำหรับการรับส่งข้อมูลผ่าน API:
             </p>
 
             <CodeBlock
-              title="src/types/book.ts (โค้ดจริงในโปรเจกต์)"
+              title="src/types/user.ts — ตารางที่ 1: ผู้ใช้งาน/สมาชิก"
               language="typescript"
-              code={`/**
- * Data Model สำหรับระบบจัดการหนังสือห้องสมุด
- * อ้างอิงตามข้อกำหนดการสอบวิชา Web
- */
+              code={`export interface User {
+  id: number;          // รหัสประจำตัวผู้ใช้ (Primary Key)
+  name: string;        // ชื่อ-นามสกุล
+  email: string;       // อีเมล
+  booksCount?: number; // จำนวนหนังสือที่ถือครอง (Computed 1:N)
+}
 
-export interface Book {
-  id: number;                   // รหัสประจำหนังสือ (Number - Primary Key)
-  title: string;                // ชื่อหนังสือ (String)
-  author: string;               // ชื่อผู้แต่ง (String)
-  userId: number;               // Foreign Key ชี้กลับไปที่ Users (1:N)
-  coverUrl: string | null;      // เก็บ Path รูป เช่น "/uploads/cover-1.jpg"
-  isAvailable: boolean;         // สถานะหนังสือ (Boolean: true = ว่าง, false = ไม่ว่าง)
-  publishedYear?: number;       // ปีที่พิมพ์ (Optional)
-  userName?: string | null;     // ชื่อ User เจ้าของหนังสือ (Populated helper)
-  createdAt?: string;           // วันที่เพิ่มข้อมูล
+export type CreateUserDto = {
+  name: string;
+  email: string;
+};
+
+export type UpdateUserDto = Partial<CreateUserDto>;`}
+            />
+
+            <CodeBlock
+              title="src/types/book.ts — ตารางที่ 2: หนังสือ (มี Foreign Key userId ชี้หา Users)"
+              language="typescript"
+              code={`export interface Book {
+  id: number;              // รหัสประจำหนังสือ (Primary Key)
+  title: string;           // ชื่อหนังสือ
+  author: string;          // ชื่อผู้แต่ง
+  userId: number;          // Foreign Key ชี้กลับไปที่ Users (1:N)
+  coverUrl: string | null; // Path รูปภาพปก เช่น "/uploads/1234_cover.jpg"
+  isAvailable: boolean;    // สถานะหนังสือ (true = พร้อมใช้งาน)
+  publishedYear?: number;  // ปีที่พิมพ์ (Optional)
+  userName?: string | null;// ชื่อเจ้าของหนังสือ (Enriched Helper สำหรับ UI)
 }
 
 export type CreateBookDto = {
@@ -231,71 +327,95 @@ export type CreateBookDto = {
   publishedYear?: number;
 };
 
-export type UpdateBookDto = Partial<CreateBookDto>;
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-  status?: number;
-}`}
+export type UpdateBookDto = Partial<CreateBookDto>;`}
             />
 
             <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">3</span>
-              โค้ดจริง: In-Memory Mock Store (src/lib/books-store.ts)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">2.2</span>
+              In-Memory Stores: จัดเก็บใน RAM ผ่าน globalThis พร้อม Cascade Delete
             </h2>
             <p className="text-sm text-slate-600">
-              เก็บข้อมูลจำลองใน RAM โดยใช้ <code className="font-mono text-indigo-600">globalThis</code> ป้องกันข้อมูลหายตอน Next.js รีโหลด พร้อม Seed Data 5 เล่ม และฟังก์ชัน CRUD ครบ:
+              💡 <strong>ทำไมต้องใช้ globalThis?</strong> ใน Next.js โหมด Dev หากประกาศตัวแปรระดับโมดูลปกติ ค่าจะถูก Reset ทุกครั้งที่ไฟล์ถูกเซฟ การผูกกับ <code className="font-mono text-indigo-600">globalThis</code> จะทำให้ข้อมูลใน RAM คงอยู่ตลอดการทดสอบ:
             </p>
 
             <CodeBlock
-              title="src/lib/books-store.ts (โค้ดจริงในโปรเจกต์)"
+              title="src/lib/users-store.ts — Users Store พร้อม Cascade Delete"
+              language="typescript"
+              code={`import { User, CreateUserDto, UpdateUserDto } from "@/types/user";
+
+const initialUsers: User[] = [
+  { id: 1, name: "สมชาย ใจดี", email: "somchai.j@example.com" },
+  { id: 2, name: "อลิสา มั่นคง", email: "alisa.m@example.com" },
+  { id: 3, name: "Robert C. Martin", email: "unclebob@cleancode.org" },
+];
+
+declare global {
+  var __libraryUsersStore: User[] | undefined;
+  var __libraryNextUserId: number | undefined;
+}
+
+if (!globalThis.__libraryUsersStore) {
+  globalThis.__libraryUsersStore = [...initialUsers];
+  globalThis.__libraryNextUserId = 4;
+}
+
+// ดึงผู้ใช้ทั้งหมด พร้อมคำนวณจำนวนหนังสือของแต่ละคน (Dynamic 1:N)
+export function getAllUsers(): User[] {
+  const users = globalThis.__libraryUsersStore || [];
+  const books = globalThis.__libraryBooksStore || [];
+  return users.map((u) => ({
+    ...u,
+    booksCount: books.filter((b) => b.userId === u.id).length,
+  }));
+}
+
+export function getUserById(id: number): User | undefined {
+  const user = (globalThis.__libraryUsersStore || []).find((u) => u.id === id);
+  if (!user) return undefined;
+  const books = globalThis.__libraryBooksStore || [];
+  return { ...user, booksCount: books.filter((b) => b.userId === user.id).length };
+}
+
+export function createUser(dto: CreateUserDto): User {
+  const nextId = globalThis.__libraryNextUserId || 4;
+  globalThis.__libraryNextUserId = nextId + 1;
+
+  const newUser: User = { id: nextId, name: dto.name.trim(), email: dto.email.trim(), booksCount: 0 };
+  globalThis.__libraryUsersStore = [...(globalThis.__libraryUsersStore || []), newUser];
+  return newUser;
+}
+
+// ⚠️ สำคัญมาก: ลบ User พร้อมทำ Cascade Delete ลบหนังสือของ User คนนี้ด้วย
+export function deleteUser(id: number): boolean {
+  const users = globalThis.__libraryUsersStore || [];
+  const index = users.findIndex((u) => u.id === id);
+  if (index === -1) return false;
+
+  // Cascade: กรองเอาหนังสือของ User คนนี้ออกจาก booksStore
+  if (globalThis.__libraryBooksStore) {
+    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.filter((b) => b.userId !== id);
+  }
+
+  users.splice(index, 1);
+  globalThis.__libraryUsersStore = [...users];
+  return true;
+}
+
+export function userExists(id: number): boolean {
+  return (globalThis.__libraryUsersStore || []).some((u) => u.id === id);
+}`}
+            />
+
+            <CodeBlock
+              title="src/lib/books-store.ts — Books Store พร้อม Foreign Key & Filters"
               language="typescript"
               code={`import { Book, CreateBookDto, UpdateBookDto } from "@/types/book";
 
-/**
- * ข้อมูลจำลองหนังสือเริ่มต้น (Seed Books)
- * ตารางที่ 2: Books (id, title, author, userId, coverUrl, isAvailable)
- */
 const initialBooks: Book[] = [
-  {
-    id: 1,
-    title: "Clean Code",
-    author: "Robert C. Martin",
-    publishedYear: 2008,
-    userId: 1, // สมาชิก #1: สมชาย ใจดี
-    coverUrl: "/uploads/1793674702785_blog-details2_1.png",
-    isAvailable: true,
-  },
-  {
-    id: 2,
-    title: "The Pragmatic Programmer",
-    author: "Andrew Hunt & David Thomas",
-    publishedYear: 1999,
-    userId: 1, // สมาชิก #1: สมชาย ใจดี (เล่มที่ 2)
-    coverUrl: null,
-    isAvailable: false,
-  },
-  {
-    id: 3,
-    title: "Refactoring: Improving Code Design",
-    author: "Martin Fowler",
-    publishedYear: 2018,
-    userId: 2, // สมาชิก #2: อลิสา มั่นคง
-    coverUrl: null,
-    isAvailable: true,
-  },
-  {
-    id: 4,
-    title: "Design Patterns: Elements of Reusable Software",
-    author: "Erich Gamma et al.",
-    publishedYear: 1994,
-    userId: 3, // สมาชิก #3: Robert C. Martin
-    coverUrl: null,
-    isAvailable: true,
-  },
+  { id: 1, title: "Clean Code", author: "Robert C. Martin", userId: 1, coverUrl: "/uploads/cover1.jpg", isAvailable: true, publishedYear: 2008 },
+  { id: 2, title: "The Pragmatic Programmer", author: "Andrew Hunt", userId: 1, coverUrl: null, isAvailable: false, publishedYear: 1999 },
+  { id: 3, title: "Refactoring", author: "Martin Fowler", userId: 2, coverUrl: null, isAvailable: true, publishedYear: 2018 },
+  { id: 4, title: "Design Patterns", author: "Erich Gamma", userId: 3, coverUrl: null, isAvailable: true, publishedYear: 1994 },
 ];
 
 declare global {
@@ -316,18 +436,12 @@ function enrichBookWithUser(book: Book): Book {
 
 export function getAllBooks(filter?: { search?: string; userId?: number; isAvailable?: boolean }): Book[] {
   let list = [...(globalThis.__libraryBooksStore || [])];
-
-  if (filter?.userId !== undefined) {
-    list = list.filter((b) => b.userId === filter.userId);
-  }
+  if (filter?.userId !== undefined) list = list.filter((b) => b.userId === filter.userId);
   if (filter?.search) {
     const q = filter.search.toLowerCase();
     list = list.filter((b) => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
   }
-  if (filter?.isAvailable !== undefined) {
-    list = list.filter((b) => b.isAvailable === filter.isAvailable);
-  }
-
+  if (filter?.isAvailable !== undefined) list = list.filter((b) => b.isAvailable === filter.isAvailable);
   return list.map(enrichBookWithUser);
 }
 
@@ -341,9 +455,8 @@ export function getBooksByUserId(userId: number): Book[] {
 }
 
 export function createBook(dto: CreateBookDto): Book {
-  const nextId = globalThis.__libraryNextId || (globalThis.__libraryBooksStore?.length || 0) + 1;
+  const nextId = globalThis.__libraryNextId || 5;
   globalThis.__libraryNextId = nextId + 1;
-
   const newBook: Book = {
     id: nextId,
     title: dto.title.trim(),
@@ -353,101 +466,134 @@ export function createBook(dto: CreateBookDto): Book {
     isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : true,
     publishedYear: dto.publishedYear ? Number(dto.publishedYear) : new Date().getFullYear(),
   };
-
   globalThis.__libraryBooksStore = [...(globalThis.__libraryBooksStore || []), newBook];
   return enrichBookWithUser(newBook);
-}
-
-export function updateBook(id: number, dto: UpdateBookDto): Book | undefined {
-  const books = globalThis.__libraryBooksStore || [];
-  const index = books.findIndex((b) => b.id === id);
-  if (index === -1) return undefined;
-
-  const current = books[index];
-  books[index] = {
-    ...current,
-    title: dto.title !== undefined ? dto.title.trim() : current.title,
-    author: dto.author !== undefined ? dto.author.trim() : current.author,
-    userId: dto.userId !== undefined ? Number(dto.userId) : current.userId,
-    coverUrl: dto.coverUrl !== undefined ? dto.coverUrl : current.coverUrl,
-    isAvailable: dto.isAvailable !== undefined ? Boolean(dto.isAvailable) : current.isAvailable,
-    publishedYear: dto.publishedYear !== undefined ? Number(dto.publishedYear) : current.publishedYear,
-  };
-
-  globalThis.__libraryBooksStore = [...books];
-  return getBookById(id);
 }
 
 export function deleteBook(id: number): boolean {
   const books = globalThis.__libraryBooksStore || [];
   const index = books.findIndex((b) => b.id === id);
   if (index === -1) return false;
-
   books.splice(index, 1);
   globalThis.__libraryBooksStore = [...books];
   return true;
-}
-
-export function resetBooksStore(): void {
-  globalThis.__libraryBooksStore = [...initialBooks];
-  globalThis.__libraryNextId = 5;
 }`}
             />
           </div>
         </section>
       )}
 
-      {/* Tab 3: RESTful API Routes */}
+      {/* ==================================================================== */}
+      {/* Tab 3: RESTful API Routes                                            */}
+      {/* ==================================================================== */}
       {activeTab === "api" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">4</span>
-              โค้ดจริง: GET /api/books & POST /api/books (src/app/api/books/route.ts)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">3.1</span>
+              Users API: CRUD สมาชิก (ตารางที่ 1)
             </h2>
             <p className="text-sm text-slate-600">
-              ดึงรายการหนังสือทั้งหมด (200 OK) และเพิ่มหนังสือเล่มใหม่พร้อม Validation (201 Created / 400 Bad Request):
+              สร้าง Route Handlers สำหรับสมาชิก: GET/POST ที่ <code className="font-mono text-indigo-600">/api/users</code> และ GET/PUT/DELETE ที่ <code className="font-mono text-indigo-600">/api/users/[id]</code>:
             </p>
 
             <CodeBlock
-              title="src/app/api/books/route.ts (โค้ดจริงในโปรเจกต์)"
+              title="src/app/api/users/route.ts (GET & POST)"
+              language="typescript"
+              code={`import { NextResponse } from "next/server";
+import { getAllUsers, createUser } from "@/lib/users-store";
+import { CreateUserDto } from "@/types/user";
+
+// GET /api/users -> 200 OK
+export async function GET() {
+  const users = getAllUsers();
+  return NextResponse.json(users, { status: 200 });
+}
+
+// POST /api/users -> 201 Created / 400 Bad Request
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    if (!body.name || typeof body.name !== "string" || body.name.trim() === "") {
+      return NextResponse.json({ error: "กรุณาระบุชื่อ-นามสกุล (name)" }, { status: 400 });
+    }
+    if (!body.email || typeof body.email !== "string" || !body.email.includes("@")) {
+      return NextResponse.json({ error: "กรุณาระบุอีเมลที่ถูกต้อง (email)" }, { status: 400 });
+    }
+
+    const newUser = createUser({ name: body.name.trim(), email: body.email.trim() });
+    return NextResponse.json(newUser, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: "Invalid JSON format" }, { status: 400 });
+  }
+}`}
+            />
+
+            <CodeBlock
+              title="src/app/api/users/[id]/route.ts (Next.js 15 Async Params & Cascade Delete)"
+              language="typescript"
+              code={`import { NextResponse } from "next/server";
+import { getUserById, updateUser, deleteUser } from "@/lib/users-store";
+
+interface RouteParams {
+  params: Promise<{ id: string }>; // ⚠️ Next.js 15+ ต้องเป็น Promise
+}
+
+// GET /api/users/:id -> 200 OK / 404 Not Found
+export async function GET(request: Request, { params }: RouteParams) {
+  const { id: rawId } = await params; // ⚠️ ต้อง await params เสมอ
+  const id = Number(rawId);
+  if (isNaN(id)) return NextResponse.json({ error: "ID ต้องเป็นตัวเลข" }, { status: 400 });
+
+  const user = getUserById(id);
+  if (!user) return NextResponse.json({ error: \`ไม่พบผู้ใช้ ID = \${id}\` }, { status: 404 });
+  return NextResponse.json(user, { status: 200 });
+}
+
+// DELETE /api/users/:id -> 200 OK (Cascade ลบหนังสือของสมาชิกนี้ด้วย)
+export async function DELETE(request: Request, { params }: RouteParams) {
+  const { id: rawId } = await params;
+  const id = Number(rawId);
+  const existing = getUserById(id);
+  if (!existing) return NextResponse.json({ error: "ไม่พบผู้ใช้" }, { status: 404 });
+
+  deleteUser(id);
+  return NextResponse.json({ message: "ลบผู้ใช้สำเร็จ (Cascade ลบหนังสือแล้ว)" }, { status: 200 });
+}`}
+            />
+
+            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">3.2</span>
+              Books API: ตรวจสอบ Foreign Key userId ก่อนบันทึก
+            </h2>
+            <p className="text-sm text-slate-600">
+              เมื่อสร้างหนังสือใหม่ (POST) ต้องตรวจสอบว่า <code className="font-mono text-indigo-600">userExists(userId)</code> เป็นจริง เพื่อรักษาความสมบูรณ์ของฐานข้อมูล (Referential Integrity):
+            </p>
+
+            <CodeBlock
+              title="src/app/api/books/route.ts (GET & POST พร้อมตรวจสอบ Foreign Key)"
               language="typescript"
               code={`import { NextResponse } from "next/server";
 import { getAllBooks, createBook } from "@/lib/books-store";
 import { userExists } from "@/lib/users-store";
 import { CreateBookDto } from "@/types/book";
 
-/**
- * GET /api/books
- * ดึงรายการหนังสือทั้งหมด (รองรับ query params: search, isAvailable, userId)
- * Response: 200 OK
- */
+// GET /api/books (รองรับ ?search=, ?isAvailable=, ?userId=)
 export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search") || undefined;
-    const isAvailableParam = searchParams.get("isAvailable");
-    const userIdParam = searchParams.get("userId");
-    
-    let isAvailable: boolean | undefined = undefined;
-    if (isAvailableParam !== null) {
-      isAvailable = isAvailableParam === "true";
-    }
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get("search") || undefined;
+  const isAvailableParam = searchParams.get("isAvailable");
+  const userIdParam = searchParams.get("userId");
+  
+  let isAvailable: boolean | undefined = undefined;
+  if (isAvailableParam !== null) isAvailable = isAvailableParam === "true";
+  const userId = userIdParam ? Number(userIdParam) : undefined;
 
-    const userId = userIdParam ? Number(userIdParam) : undefined;
-    const books = getAllBooks({ search, isAvailable, userId });
-    return NextResponse.json(books, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
+  const books = getAllBooks({ search, isAvailable, userId });
+  return NextResponse.json(books, { status: 200 });
 }
 
-/**
- * POST /api/books
- * เพิ่มหนังสือใหม่
- * Body: { title, author, userId, coverUrl?, isAvailable?, publishedYear? }
- * Response: 201 Created / 400 Bad Request
- */
+// POST /api/books -> 201 Created / 400 Bad Request
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -455,23 +601,22 @@ export async function POST(request: Request) {
     if (!body.title || typeof body.title !== "string" || body.title.trim() === "") {
       return NextResponse.json({ error: "กรุณาระบุชื่อหนังสือ (title)" }, { status: 400 });
     }
-
     if (!body.author || typeof body.author !== "string" || body.author.trim() === "") {
       return NextResponse.json({ error: "กรุณาระบุชื่อผู้แต่ง (author)" }, { status: 400 });
     }
 
-    if (body.userId === undefined || body.userId === null || isNaN(Number(body.userId))) {
-      return NextResponse.json({ error: "กรุณาระบุรหัสผู้ใช้เจ้าของหนังสือ (userId)" }, { status: 400 });
+    // ⚠️ ตรวจสอบ Foreign Key (userId)
+    if (body.userId === undefined || isNaN(Number(body.userId))) {
+      return NextResponse.json({ error: "กรุณาระบุรหัสสมาชิกเจ้าของหนังสือ (userId)" }, { status: 400 });
     }
-
     const userId = Number(body.userId);
     if (!userExists(userId)) {
-      return NextResponse.json({ error: \`ไม่พบผู้ใช้รหัส #\${userId} ในระบบ\` }, { status: 400 });
+      return NextResponse.json({ error: \`ไม่พบสมาชิก ID = \${userId} (Foreign Key Error)\` }, { status: 400 });
     }
 
     const dto: CreateBookDto = {
-      title: body.title,
-      author: body.author,
+      title: body.title.trim(),
+      author: body.author.trim(),
       userId,
       coverUrl: body.coverUrl || null,
       isAvailable: body.isAvailable !== undefined ? Boolean(body.isAvailable) : true,
@@ -481,472 +626,148 @@ export async function POST(request: Request) {
     const newBook = createBook(dto);
     return NextResponse.json(newBook, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: "รูปแบบ JSON ไม่ถูกต้อง" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON format" }, { status: 400 });
   }
 }`}
             />
 
             <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">5</span>
-              โค้ดจริง: GET, PUT, DELETE /api/books/:id (src/app/api/books/[id]/route.ts)
+              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">3.3</span>
+              Relational Endpoint: ดึงหนังสือตามสมาชิก (GET /api/users/:id/books)
             </h2>
-            <p className="text-sm text-slate-600">
-              จัดการหนังสือรายเล่มตาม ID รองรับการดึง (200/404), แก้ไข (200/404), และลบ (200/404):
-            </p>
 
             <CodeBlock
-              title="src/app/api/books/[id]/route.ts (โค้ดจริงในโปรเจกต์)"
+              title="src/app/api/users/[id]/books/route.ts (Nested 1:N Resource)"
               language="typescript"
               code={`import { NextResponse } from "next/server";
-import { getBookById, updateBook, deleteBook } from "@/lib/books-store";
-import { UpdateBookDto } from "@/types/book";
+import { getUserById } from "@/lib/users-store";
+import { getBooksByUserId } from "@/lib/books-store";
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: rawId } = await params;
+  const id = Number(rawId);
 
-/**
- * GET /api/books/:id
- * ดึงข้อมูลหนังสือเล่มเดียวตาม ID
- * Response: 200 OK (พบข้อมูล), 404 Not Found (ไม่พบข้อมูล)
- */
-export async function GET(request: Request, { params }: RouteParams) {
-  try {
-    const { id: rawId } = await params;
-    const id = Number(rawId);
+  const user = getUserById(id);
+  if (!user) return NextResponse.json({ error: \`ไม่พบผู้ใช้ ID = \${id}\` }, { status: 404 });
 
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "ID ต้องเป็นตัวเลขเท่านั้น" },
-        { status: 400 }
-      );
-    }
-
-    const book = getBookById(id);
-    if (!book) {
-      return NextResponse.json(
-        { error: \`ไม่พบหนังสือที่มี ID = \${id}\` },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(book, { status: 200 });
-  } catch (error) {
-    console.error("GET /api/books/:id error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * PUT /api/books/:id
- * แก้ไขข้อมูลหนังสือตาม ID
- * Response: 200 OK (แก้ไขสำเร็จ), 404 Not Found (ไม่พบหนังสือ)
- */
-export async function PUT(request: Request, { params }: RouteParams) {
-  try {
-    const { id: rawId } = await params;
-    const id = Number(rawId);
-
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "ID ต้องเป็นตัวเลขเท่านั้น" },
-        { status: 400 }
-      );
-    }
-
-    const existing = getBookById(id);
-    if (!existing) {
-      return NextResponse.json(
-        { error: \`ไม่พบหนังสือที่มี ID = \${id} เพื่อทำการแก้ไข\` },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    const dto: UpdateBookDto = {};
-
-    if (body.title !== undefined) {
-      if (typeof body.title !== "string" || body.title.trim() === "") {
-        return NextResponse.json({ error: "ชื่อหนังสือต้องไม่เป็นค่าว่าง" }, { status: 400 });
-      }
-      dto.title = body.title;
-    }
-
-    if (body.author !== undefined) {
-      if (typeof body.author !== "string" || body.author.trim() === "") {
-        return NextResponse.json({ error: "ชื่อผู้แต่งต้องไม่เป็นค่าว่าง" }, { status: 400 });
-      }
-      dto.author = body.author;
-    }
-
-    if (body.publishedYear !== undefined) {
-      const year = Number(body.publishedYear);
-      if (isNaN(year) || year < 1000 || year > 2100) {
-        return NextResponse.json({ error: "ปีที่พิมพ์ต้องเป็นตัวเลข ค.ศ. ที่ถูกต้อง" }, { status: 400 });
-      }
-      dto.publishedYear = year;
-    }
-
-    if (body.isAvailable !== undefined) {
-      dto.isAvailable = Boolean(body.isAvailable);
-    }
-
-    if (body.coverUrl !== undefined) {
-      dto.coverUrl = body.coverUrl;
-    }
-
-    const updated = updateBook(id, dto);
-    return NextResponse.json(updated, { status: 200 });
-  } catch (error) {
-    console.error("PUT /api/books/:id error:", error);
-    return NextResponse.json(
-      { error: "รูปแบบ JSON ไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการแก้ไข" },
-      { status: 400 }
-    );
-  }
-}
-
-/**
- * DELETE /api/books/:id
- * ลบหนังสือตาม ID
- * Response: 200 OK (ลบสำเร็จ), 404 Not Found (ไม่พบหนังสือ)
- */
-export async function DELETE(request: Request, { params }: RouteParams) {
-  try {
-    const { id: rawId } = await params;
-    const id = Number(rawId);
-
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "ID ต้องเป็นตัวเลขเท่านั้น" },
-        { status: 400 }
-      );
-    }
-
-    const book = getBookById(id);
-    if (!book) {
-      return NextResponse.json(
-        { error: \`ไม่พบหนังสือที่มี ID = \${id} เพื่อทำการลบ\` },
-        { status: 404 }
-      );
-    }
-
-    const success = deleteBook(id);
-    if (!success) {
-      return NextResponse.json(
-        { error: "ไม่สามารถลบหนังสือได้" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        message: "ลบข้อมูลหนังสือสำเร็จ",
-        deletedId: id,
-        deletedBook: book,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("DELETE /api/books/:id error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
+  const books = getBooksByUserId(id);
+  return NextResponse.json({
+    user: { id: user.id, name: user.name, email: user.email },
+    booksCount: books.length,
+    books,
+  }, { status: 200 });
 }`}
             />
           </div>
         </section>
       )}
 
-      {/* Tab 4: File Upload API */}
+      {/* ==================================================================== */}
+      {/* Tab 4: File Upload API                                               */}
+      {/* ==================================================================== */}
       {activeTab === "upload" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">6</span>
-              โค้ดจริง: File Upload Route Handler (src/app/api/upload/route.ts)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">4.1</span>
+              Server Route: POST /api/upload (รับไฟล์ FormData และบันทึกลง public/uploads)
             </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              รับไฟล์ผ่าน <code className="font-mono text-indigo-600">request.formData()</code>, ตรวจสอบขนาดไม่เกิน 5MB, สร้างชื่อไฟล์แบบ unique ด้วย timestamp และเขียนลง <code className="font-mono text-indigo-600">public/uploads/</code>:
+            <p className="text-sm text-slate-600">
+              รับไฟล์รูปภาพจาก <code className="font-mono text-indigo-600">request.formData()</code>, ตรวจสอบขนาดไม่เกิน 5MB, ป้องกันชื่อไฟล์ซ้ำด้วย Timestamp และบันทึกลงดิสก์:
             </p>
 
             <CodeBlock
-              title="src/app/api/upload/route.ts (โค้ดจริงในโปรเจกต์)"
+              title="src/app/api/upload/route.ts"
               language="typescript"
               code={`import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
-/**
- * POST /api/upload
- * อัปโหลดไฟล์ (เช่น ภาพปกหนังสือ) ด้วย FormData
- * Content-Type: multipart/form-data
- * Form field: "file"
- * Response: 201 Created (อัปโหลดสำเร็จ), 400 Bad Request (ไม่มีไฟล์หรือไม่ถูกต้อง)
- */
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
-    if (!file) {
-      return NextResponse.json(
-        { error: "กรุณาแนบไฟล์ในฟิลด์ 'file'" },
-        { status: 400 }
-      );
-    }
+    if (!file) return NextResponse.json({ error: "กรุณาแนบไฟล์ในฟิลด์ 'file'" }, { status: 400 });
+    if (file.size > 5 * 1024 * 1024) return NextResponse.json({ error: "ขนาดไฟล์ต้องไม่เกิน 5MB" }, { status: 400 });
 
-    // ตรวจสอบขนาดไฟล์ (จำกัดไม่เกิน 5 MB)
-    const MAX_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: "ขนาดไฟล์ต้องไม่เกิน 5MB" },
-        { status: 400 }
-      );
-    }
-
-    // สร้างชื่อไฟล์ที่ปลอดภัยและไม่ซ้ำกัน
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // กำหนดปลายทาง public/uploads
     const uploadDir = path.join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
 
-    // Sanitize filename & add timestamp prefix
     const originalExt = path.extname(file.name) || ".jpg";
-    const cleanBase = path
-      .basename(file.name, originalExt)
-      .replace(/[^a-zA-Z0-9_-]/g, "_")
-      .slice(0, 30);
+    const cleanBase = path.basename(file.name, originalExt).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
     const uniqueFilename = \`\${Date.now()}_\${cleanBase}\${originalExt}\`;
     const filePath = path.join(uploadDir, uniqueFilename);
 
     await writeFile(filePath, buffer);
-
     const publicUrl = \`/uploads/\${uniqueFilename}\`;
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "อัปโหลดไฟล์สำเร็จ",
-        url: publicUrl,
-        filename: uniqueFilename,
-        size: file.size,
-        type: file.type,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: "อัปโหลดไฟล์สำเร็จ",
+      url: publicUrl,
+      filename: uniqueFilename,
+    }, { status: 201 });
   } catch (error) {
-    console.error("POST /api/upload error:", error);
-    return NextResponse.json(
-      { error: "เกิดข้อผิดพลาดในการอัปโหลดไฟล์" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดในการอัปโหลดไฟล์" }, { status: 500 });
   }
 }`}
             />
 
             <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">7</span>
-              โค้ดจริง: React File Uploader Component (src/components/file-uploader.tsx)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">4.2</span>
+              Client Component: FileUploader พร้อมพรีวิวรูปภาพทันที
             </h2>
             <p className="text-sm text-slate-600">
-              คอมโพเนนต์สำหรับให้ผู้ใช้เลือกไฟล์, แสดง Preview ทันที, ส่ง `FormData` ไปยัง `/api/upload` และส่ง URL กลับมา:
+              💡 <strong>กฎเหล็กการส่ง FormData ใน fetch:</strong> ห้ามใส่ <code className="font-mono text-rose-600">headers: &#123; &apos;Content-Type&apos;: &apos;multipart/form-data&apos; &#125;</code> เด็ดขาด ปล่อยให้ Browser ใส่ boundary ให้อัตโนมัติ:
             </p>
 
             <CodeBlock
-              title="src/components/file-uploader.tsx (โค้ดจริงในโปรเจกต์)"
+              title="วิธีส่ง FormData ใน Client Component"
               language="typescript"
-              code={`"use client";
+              code={`// 1. สร้าง Local Preview ทันทีที่เลือกไฟล์ (Instant UI)
+const objectUrl = URL.createObjectURL(file);
+setPreviewUrl(objectUrl);
 
-import React, { useState, useRef } from "react";
-import { UploadCloud, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import Image from "next/image";
+// 2. สร้าง FormData และยิง API
+const formData = new FormData();
+formData.append("file", file);
 
-interface FileUploaderProps {
-  currentUrl?: string | null;
-  onUploadSuccess: (url: string) => void;
-  onRemove?: () => void;
-}
+const res = await fetch("/api/upload", {
+  method: "POST",
+  body: formData, // ห้ามใส่ Header Content-Type!
+});
 
-export function FileUploader({
-  currentUrl,
-  onUploadSuccess,
-  onRemove,
-}: FileUploaderProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentUrl || null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setError(null);
-
-    if (file.size > 5 * 1024 * 1024) {
-      setError("ขนาดไฟล์เกิน 5MB กรุณาเลือกไฟล์ใหม่");
-      return;
-    }
-
-    // Local preview immediately
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-
-    // Upload to /api/upload using FormData
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // สำคัญ: ห้ามตั้ง Content-Type เมื่อส่ง FormData ใน fetch!
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการอัปโหลด");
-
-      onUploadSuccess(data.url);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "อัปโหลดไฟล์ล้มเหลว";
-      setError(message);
-      setPreviewUrl(currentUrl || null);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleClear = () => {
-    setPreviewUrl(null);
-    setError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (onRemove) onRemove();
-  };
-
-  return (
-    <div className="w-full">
-      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-        รูปภาพหน้าปกหนังสือ (File Upload)
-      </label>
-
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        className="hidden"
-      />
-
-      {previewUrl ? (
-        <div className="relative border border-slate-200 rounded-xl p-3 bg-slate-50 flex items-center gap-4">
-          <div className="relative w-16 h-20 rounded-lg overflow-hidden border border-slate-300 bg-white shrink-0 shadow-xs">
-            <Image src={previewUrl} alt="Preview" fill className="object-cover" unoptimized />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 mb-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>อัปโหลดรูปภาพพร้อมใช้งาน</span>
-            </div>
-            <p className="text-xs text-slate-500 truncate">{previewUrl}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
-              >
-                เปลี่ยนรูปใหม่
-              </button>
-              <span className="text-slate-300">•</span>
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={isUploading}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium"
-              >
-                ลบรูปภาพ
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer border-2 border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/30 rounded-xl p-5 text-center transition-all group"
-        >
-          <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-indigo-100 text-slate-500 group-hover:text-indigo-600 flex items-center justify-center mx-auto mb-2 transition-colors">
-            {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-indigo-600" /> : <UploadCloud className="w-5 h-5" />}
-          </div>
-          <p className="text-xs font-medium text-slate-700 group-hover:text-indigo-700">
-            คลิกเพื่อเลือกไฟล์ หรือลากรูปภาพมาวางที่นี่
-          </p>
-          <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, WEBP สูงสุด 5MB</p>
-        </div>
-      )}
-    </div>
-  );
+const data = await res.json();
+if (res.ok) {
+  onUploadSuccess(data.url); // ได้ URL เช่น "/uploads/1730000000_cover.jpg"
 }`}
             />
           </div>
         </section>
       )}
 
-      {/* Tab 5: Frontend & Optimistic UI */}
+      {/* ==================================================================== */}
+      {/* Tab 5: Frontend & Optimistic UI                                      */}
+      {/* ==================================================================== */}
       {activeTab === "frontend" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">8</span>
-              โค้ดจริง: Optimistic Update & Silent Background Fetch
+              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">5</span>
+              Master-Detail State Management & Optimistic Updates 3 จังหวะ
             </h2>
             <p className="text-sm text-slate-600">
-              โค้ดจริงจาก <code className="font-mono text-indigo-600">src/app/page.tsx</code> สำหรับสลับสถานะหนังสือแบบทันที (Optimistic Update) ไม่กระตุก ไม่เลื่อน และดึงข้อมูลจริงมา sync ใน background:
+              สถาปัตยกรรม UI ที่ให้คะแนน UX สูงสุดในห้องสอบ: คลิกเลือก User ฝั่งซ้ายเพื่อกรองฝั่งขวา และสลับสถานะหนังสือแบบทันใจ (Optimistic Update) โดยไม่กระตุก:
             </p>
 
             <CodeBlock
-              title="Optimistic Update & Background Fetch Logic ใน src/app/page.tsx"
+              title="Optimistic Toggle Status ใน src/app/page.tsx"
               language="typescript"
-              code={`// 1. ฟังก์ชันดึงข้อมูลที่รองรับ parameter isBackground
-const fetchBooks = useCallback(async (isBackground = false) => {
-  // หากเป็น background re-fetch จะไม่เซ็ต isLoading(true) หน้าจอจึงไม่วูบหรือมี skeleton กะพริบ
-  if (!isBackground) {
-    setIsLoading(true);
-  }
-  try {
-    const params = new URLSearchParams();
-    if (search.trim()) params.append("search", search.trim());
-    if (filterAvailable === "available") params.append("isAvailable", "true");
-    if (filterAvailable === "unavailable") params.append("isAvailable", "false");
-
-    const res = await fetch(\`/api/books?\${params.toString()}\`);
-    if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลหนังสือได้");
-    const data = await res.json();
-    setBooks(data);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "ดึงข้อมูลผิดพลาด";
-    toast({
-      type: "error",
-      title: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
-      message: msg,
-      status: 500,
-    });
-  } finally {
-    if (!isBackground) {
-      setIsLoading(false);
-    }
-  }
-}, [search, filterAvailable, toast]);
-
-// 2. Toggle Status แบบ Optimistic Update
+              code={`// สลับสถานะความพร้อมของหนังสือแบบ 3 จังหวะ
 const handleToggleStatus = async (id: number) => {
   const book = books.find((b) => b.id === id);
   if (!book) return;
@@ -954,96 +775,26 @@ const handleToggleStatus = async (id: number) => {
   const previousStatus = book.isAvailable;
   const newStatus = !previousStatus;
 
-  // ก้าวที่ 1: Optimistic Update - แก้ไขสถานะใน Array ของ State ทันที UI เปลี่ยนทันใจ ไม่กระตุก ไม่เลื่อน
-  setBooks((prevBooks) =>
-    prevBooks.map((b) => (b.id === id ? { ...b, isAvailable: newStatus } : b))
-  );
+  // จังหวะที่ 1: Optimistic Update เปลี่ยน State ทันทีในเสี้ยววินาที
+  setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isAvailable: newStatus } : b)));
 
   try {
+    // จังหวะที่ 2: ยิง PUT API เบื้องหลัง
     const res = await fetch(\`/api/books/\${id}\`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isAvailable: newStatus }),
     });
+    if (!res.ok) throw new Error();
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "อัปเดตสถานะไม่สำเร็จ");
+    toast({ type: "success", title: "เปลี่ยนสถานะสำเร็จ", status: 200 });
 
-    toast({
-      type: "success",
-      title: "เปลี่ยนสถานะหนังสือสำเร็จ",
-      message: \`หนังสือ "\${data.title}" สถานะคือ: \${newStatus ? "พร้อมใช้งาน" : "ไม่พร้อมใช้งาน"}\`,
-      status: 200,
-    });
-
-    // ก้าวที่ 2: ดึงข้อมูลล่าสุดจาก Server มา sync ใน background เงียบๆ โดยไม่เซ็ต loading
+    // จังหวะที่ 3 (สำเร็จ): Background Sync ข้อมูลจริงเงียบๆ โดยไม่เซ็ต loading
     fetchBooks(true);
-  } catch (err: unknown) {
-    // ก้าวที่ 3: หาก API ส่ง Error ให้ Rollback ค่าเดิมกลับคืน
-    setBooks((prevBooks) =>
-      prevBooks.map((b) => (b.id === id ? { ...b, isAvailable: previousStatus } : b))
-    );
-
-    const msg = err instanceof Error ? err.message : "เปลี่ยนสถานะล้มเหลว";
-    toast({
-      type: "error",
-      title: "เปลี่ยนสถานะไม่สำเร็จ",
-      message: msg,
-      status: 404,
-    });
-  }
-};`}
-            />
-
-            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">9</span>
-              โค้ดจริง: Delete Book แบบ Optimistic Update
-            </h2>
-            <p className="text-sm text-slate-600">
-              ลบหนังสือออกจาก State ทันที เมื่อ API สำเร็จให้ Background sync:
-            </p>
-
-            <CodeBlock
-              title="Delete Book Optimistic Pattern"
-              language="typescript"
-              code={`const handleDelete = async (id: number, title: string) => {
-  if (!confirm(\`คุณต้องการลบหนังสือ "\${title}" (ID: \${id}) ใช่หรือไม่?\`)) {
-    return;
-  }
-
-  const previousBooks = [...books];
-
-  // ก้าวที่ 1: ลบออกจาก State ทันทีเพื่อให้ UI ตอบสนองรวดเร็ว
-  setBooks((prev) => prev.filter((b) => b.id !== id));
-
-  try {
-    const res = await fetch(\`/api/books/\${id}\`, {
-      method: "DELETE",
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "ลบข้อมูลล้มเหลว");
-
-    toast({
-      type: "success",
-      title: "ลบหนังสือสำเร็จ",
-      message: \`ลบ "\${title}" ออกจากระบบแล้ว\`,
-      status: 200,
-    });
-
-    // ก้าวที่ 2: Sync ข้อมูลจริงใน background
-    fetchBooks(true);
-  } catch (err: unknown) {
-    // ก้าวที่ 3: Rollback หากเกิดข้อผิดพลาด
-    setBooks(previousBooks);
-
-    const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการลบ";
-    toast({
-      type: "error",
-      title: "ลบหนังสือไม่สำเร็จ",
-      message: msg,
-      status: 404,
-    });
+  } catch {
+    // จังหวะที่ 3 (ล้มเหลว): Rollback คืนค่าเดิมทันทีเมื่อเกิดข้อผิดพลาด
+    setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, isAvailable: previousStatus } : b)));
+    toast({ type: "error", title: "เปลี่ยนสถานะล้มเหลว", status: 400 });
   }
 };`}
             />
@@ -1051,28 +802,34 @@ const handleToggleStatus = async (id: number) => {
         </section>
       )}
 
-      {/* Tab 6: 2-Table Relations (Users & Books) */}
+      {/* ==================================================================== */}
+      {/* Tab 6: 2 ตารางสัมพันธ์ (Users & Books)                                */}
+      {/* ==================================================================== */}
       {activeTab === "relations" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
-          {/* Schema Overview Box */}
           <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200">
             <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
               <Users className="w-4 h-4 text-indigo-600" />
-              โครงสร้างความสัมพันธ์ 2 ตาราง (1 : N) ตามข้อสอบ
+              โครงสร้างความสัมพันธ์ 2 ตาราง (1 : N Relational Model)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="p-3 bg-white rounded-xl border border-indigo-100 shadow-2xs">
-                <p className="font-bold text-slate-900 mb-1">[ ตารางที่ 1: Users ]</p>
+              <div className="p-3.5 bg-white rounded-xl border border-indigo-100 shadow-2xs">
+                <p className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+                  <Database className="w-3.5 h-3.5 text-indigo-600" /> ตารางที่ 1: Users (1)
+                </p>
                 <p className="text-slate-600">• id: Number (Primary Key)</p>
-                <p className="text-slate-600">• name: String</p>
-                <p className="text-slate-600">• email: String</p>
+                <p className="text-slate-600">• name: String (ชื่อ-นามสกุล)</p>
+                <p className="text-slate-600">• email: String (อีเมล)</p>
+                <p className="text-indigo-600 font-semibold">• booksCount: Number (Computed)</p>
               </div>
-              <div className="p-3 bg-white rounded-xl border border-indigo-100 shadow-2xs">
-                <p className="font-bold text-slate-900 mb-1">[ ตารางที่ 2: Books ]</p>
+              <div className="p-3.5 bg-white rounded-xl border border-indigo-100 shadow-2xs">
+                <p className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-600" /> ตารางที่ 2: Books (N)
+                </p>
                 <p className="text-slate-600">• id: Number (Primary Key)</p>
                 <p className="text-slate-600">• title: String, author: String</p>
-                <p className="text-indigo-600 font-semibold">• userId: Number (Foreign Key ชี้กลับไปที่ Users)</p>
-                <p className="text-emerald-600 font-semibold">• coverUrl: String (เก็บ Path รูป เช่น &quot;/uploads/cover-1.jpg&quot;)</p>
+                <p className="text-indigo-600 font-bold">• userId: Number (Foreign Key -&gt; Users.id)</p>
+                <p className="text-emerald-600 font-semibold">• coverUrl: String (File Upload Path)</p>
                 <p className="text-slate-600">• isAvailable: Boolean</p>
               </div>
             </div>
@@ -1080,244 +837,136 @@ const handleToggleStatus = async (id: number) => {
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">10</span>
-              โค้ดจริง: Model ผู้ใช้ (src/types/user.ts)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">6</span>
+              การทำงานของ Cascade Delete เมื่อลบสมาชิก
             </h2>
-            <p className="text-sm text-slate-600">
-              กำหนด User Model สำหรับเชื่อมโยงกับ Books (1:N Relation):
+            <p className="text-sm text-slate-600 leading-relaxed">
+              เมื่อทำการลบสมาชิก <code className="font-mono text-indigo-600">DELETE /api/users/:id</code> ระบบจะทำการ Cascade Delete ลบหนังสือทุกเล่มที่มี <code className="font-mono text-indigo-600">userId</code> ตรงกับสมาชิกคนนั้นออกจากตาราง Books อัตโนมัติ เพื่อป้องกัน Orphaned Records (ข้อมูลหนังสือที่ไม่มีเจ้าของ):
             </p>
 
             <CodeBlock
-              title="src/types/user.ts (โค้ดจริงในโปรเจกต์)"
+              title="กลไก Cascade Delete ใน src/lib/users-store.ts"
               language="typescript"
-              code={`export interface User {
-  id: number;          // รหัสประจำตัวผู้ใช้ (Primary Key)
-  name: string;        // ชื่อ-นามสกุล
-  email: string;       // อีเมล
-  booksCount?: number; // จำนวนหนังสือที่ถือครอง (1:N)
-}
-
-export type CreateUserDto = {
-  name: string;
-  email: string;
-};
-
-export type UpdateUserDto = Partial<CreateUserDto>;`}
-            />
-
-            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">11</span>
-              โค้ดจริง: In-Memory Users Store (src/lib/users-store.ts)
-            </h2>
-            <p className="text-sm text-slate-600">
-              จัดการผู้ใช้ พร้อมคำนวณจำนวนหนังสือที่ถือครองอยู่แบบ dynamic:
-            </p>
-
-            <CodeBlock
-              title="src/lib/users-store.ts (โค้ดจริงในโปรเจกต์)"
-              language="typescript"
-              code={`import { User, CreateUserDto, UpdateUserDto } from "@/types/user";
-
-const initialUsers: User[] = [
-  { id: 1, name: "สมชาย ใจดี", email: "somchai.j@example.com" },
-  { id: 2, name: "อลิสา มั่นคง", email: "alisa.m@example.com" },
-  { id: 3, name: "Robert C. Martin", email: "unclebob@cleancode.org" },
-];
-
-declare global {
-  var __libraryUsersStore: User[] | undefined;
-  var __libraryNextUserId: number | undefined;
-}
-
-if (!globalThis.__libraryUsersStore) {
-  globalThis.__libraryUsersStore = [...initialUsers];
-  globalThis.__libraryNextUserId = 4;
-}
-
-export function getAllUsers(): User[] {
-  const users = globalThis.__libraryUsersStore || [];
-  const books = globalThis.__libraryBooksStore || [];
-
-  return users.map((u) => ({
-    ...u,
-    booksCount: books.filter((b) => b.userId === u.id).length,
-  }));
-}
-
-export function getUserById(id: number): User | undefined {
-  const user = (globalThis.__libraryUsersStore || []).find((u) => u.id === id);
-  if (!user) return undefined;
-
-  const books = globalThis.__libraryBooksStore || [];
-  return {
-    ...user,
-    booksCount: books.filter((b) => b.userId === user.id).length,
-  };
-}
-
-export function createUser(dto: CreateUserDto): User {
-  const nextId = globalThis.__libraryNextUserId || 4;
-  globalThis.__libraryNextUserId = nextId + 1;
-
-  const newUser: User = {
-    id: nextId,
-    name: dto.name.trim(),
-    email: dto.email.trim(),
-    booksCount: 0,
-  };
-
-  globalThis.__libraryUsersStore = [...(globalThis.__libraryUsersStore || []), newUser];
-  return newUser;
-}
-
+              code={`// ลบ User และ Cascade หนังสือของคนนั้น
 export function deleteUser(id: number): boolean {
   const users = globalThis.__libraryUsersStore || [];
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return false;
 
-  // Cascade: ลบหนังสือทั้งหมดของผู้ใช้คนนี้ออกด้วย
+  // 1. ลบหนังสือทั้งหมดของ User คนนี้
   if (globalThis.__libraryBooksStore) {
-    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.filter((book) => book.userId !== id);
+    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.filter((b) => b.userId !== id);
   }
 
+  // 2. ลบ User
   users.splice(index, 1);
   globalThis.__libraryUsersStore = [...users];
   return true;
 }`}
             />
-
-            <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">12</span>
-              โค้ดจริง: Route Handler ดึงหนังสือตามผู้ใช้ (src/app/api/users/[id]/books/route.ts)
-            </h2>
-            <p className="text-sm text-slate-600">
-              สร้าง Route Handler สำหรับดึงรายการหนังสือทั้งหมดของสมาชิกคนนั้น (`GET /api/users/:id/books`):
-            </p>
-
-            <CodeBlock
-              title="src/app/api/users/[id]/books/route.ts"
-              language="typescript"
-              code={`import { NextResponse } from "next/server";
-import { getUserById } from "@/lib/users-store";
-import { getBooksByUserId } from "@/lib/books-store";
-
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id: rawId } = await params;
-    const id = Number(rawId);
-
-    const user = getUserById(id);
-    if (!user) {
-      return NextResponse.json({ error: \`ไม่พบผู้ใช้ ID = \${id}\` }, { status: 404 });
-    }
-
-    const books = getBooksByUserId(id);
-    return NextResponse.json(
-      {
-        user: { id: user.id, name: user.name, email: user.email },
-        booksCount: books.length,
-        books,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
-}`}
-            />
           </div>
         </section>
       )}
 
-      {/* Tab 7: cURL Test Commands */}
+      {/* ==================================================================== */}
+      {/* Tab 7: cURL Test Commands                                            */}
+      {/* ==================================================================== */}
       {activeTab === "curl" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">10</span>
-              คำสั่ง cURL จริงสำหรับทดสอบ API ทุกเส้น (1-Click Copy)
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">7</span>
+              คำสั่ง cURL จริงสำหรับทดสอบ API ทุกเส้น (มี userId ถูกต้อง 100%)
             </h2>
             <p className="text-sm text-slate-600">
               ทดสอบผ่าน Terminal หรือนำไปใช้สร้าง Request ใน Postman / Thunder Client ได้ทันที:
             </p>
 
-            <CodeBlock
-              title="1. ดึงหนังสือทั้งหมด (GET /api/books -> 200 OK)"
-              language="bash"
-              code="curl -X GET http://localhost:3000/api/books"
-            />
+            <div className="space-y-3">
+              <CodeBlock
+                title="1. ดึงสมาชิกทั้งหมด (GET /api/users -> 200 OK)"
+                language="bash"
+                code="curl -X GET http://localhost:3000/api/users"
+              />
 
-            <CodeBlock
-              title="2. ดึงหนังสือตาม ID ที่มีอยู่ (GET /api/books/1 -> 200 OK)"
-              language="bash"
-              code="curl -X GET http://localhost:3000/api/books/1"
-            />
+              <CodeBlock
+                title="2. เพิ่มสมาชิกใหม่ (POST /api/users -> 201 Created)"
+                language="bash"
+                code={`curl -X POST http://localhost:3000/api/users \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "วีระชัย รักเรียน",
+    "email": "veerachai.r@example.com"
+  }'`}
+              />
 
-            <CodeBlock
-              title="3. ดึงหนังสือตาม ID ที่ไม่มีในระบบ (GET /api/books/999 -> 404 Not Found)"
-              language="bash"
-              code="curl -i -X GET http://localhost:3000/api/books/999"
-            />
+              <CodeBlock
+                title="3. ดึงหนังสือของสมาชิก ID #1 (GET /api/users/1/books -> 200 OK)"
+                language="bash"
+                code="curl -X GET http://localhost:3000/api/users/1/books"
+              />
 
-            <CodeBlock
-              title="4. เพิ่มหนังสือใหม่ (POST /api/books -> 201 Created)"
-              language="bash"
-              code={`curl -X POST http://localhost:3000/api/books \\
+              <CodeBlock
+                title="4. ดึงหนังสือทั้งหมด (GET /api/books -> 200 OK)"
+                language="bash"
+                code="curl -X GET http://localhost:3000/api/books"
+              />
+
+              <CodeBlock
+                title="5. เพิ่มหนังสือใหม่ (POST /api/books -> 201 Created) *ต้องมี userId"
+                language="bash"
+                code={`curl -X POST http://localhost:3000/api/books \\
   -H "Content-Type: application/json" \\
   -d '{
     "title": "Clean Architecture",
     "author": "Robert C. Martin",
+    "userId": 1,
     "publishedYear": 2017,
     "isAvailable": true
   }'`}
-            />
+              />
 
-            <CodeBlock
-              title="5. แก้ไขข้อมูลหนังสือ (PUT /api/books/1 -> 200 OK)"
-              language="bash"
-              code={`curl -X PUT http://localhost:3000/api/books/1 \\
+              <CodeBlock
+                title="6. ดึงหนังสือตาม ID (GET /api/books/1 -> 200 OK)"
+                language="bash"
+                code="curl -X GET http://localhost:3000/api/books/1"
+              />
+
+              <CodeBlock
+                title="7. แก้ไขข้อมูลหนังสือ (PUT /api/books/1 -> 200 OK)"
+                language="bash"
+                code={`curl -X PUT http://localhost:3000/api/books/1 \\
   -H "Content-Type: application/json" \\
   -d '{
     "isAvailable": false
   }'`}
-            />
+              />
 
-            <CodeBlock
-              title="6. ลบหนังสือ (DELETE /api/books/1 -> 200 OK)"
-              language="bash"
-              code="curl -X DELETE http://localhost:3000/api/books/1"
-            />
+              <CodeBlock
+                title="8. ลบหนังสือ (DELETE /api/books/1 -> 200 OK)"
+                language="bash"
+                code="curl -X DELETE http://localhost:3000/api/books/1"
+              />
 
-            <CodeBlock
-              title="7. อัปโหลดไฟล์รูปภาพ (POST /api/upload -> 201 Created)"
-              language="bash"
-              code="curl -X POST http://localhost:3000/api/upload -F 'file=@/path/to/image.png'"
-            />
+              <CodeBlock
+                title="9. อัปโหลดไฟล์รูปภาพ (POST /api/upload -> 201 Created)"
+                language="bash"
+                code="curl -X POST http://localhost:3000/api/upload -F 'file=@/path/to/cover.png'"
+              />
 
-            <CodeBlock
-              title="8. ดึงรายชื่อผู้ใช้ทั้งหมด (GET /api/users -> 200 OK)"
-              language="bash"
-              code="curl -X GET http://localhost:3000/api/users"
-            />
-
-            <CodeBlock
-              title="9. ดึงรายการหนังสือของสมาชิก (GET /api/users/1/books -> 200 OK)"
-              language="bash"
-              code="curl -X GET http://localhost:3000/api/users/1/books"
-            />
-
-            <CodeBlock
-              title="10. สลับสถานะหนังสือ (PUT /api/books/1 -> 200 OK)"
-              language="bash"
-              code={`curl -X PUT http://localhost:3000/api/books/1 \\
-  -H "Content-Type: application/json" \\
-  -d '{"isAvailable": false}'`}
-            />
+              <CodeBlock
+                title="10. ทดสอบ Cascade Delete: ลบสมาชิก ID #1 (DELETE /api/users/1 -> 200 OK)"
+                language="bash"
+                code="curl -X DELETE http://localhost:3000/api/users/1"
+              />
+            </div>
           </div>
         </section>
       )}
 
-      {/* Tab 7: Pitfalls & Traps */}
+      {/* ==================================================================== */}
+      {/* Tab 8: Pitfalls & Traps                                              */}
+      {/* ==================================================================== */}
       {activeTab === "pitfalls" && (
         <section className="py-6 space-y-6 animate-in fade-in duration-200">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
@@ -1333,17 +982,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
                   1. Next.js 15+ Params เป็น Promise
                 </p>
                 <p className="text-xs text-amber-800 leading-relaxed">
-                  ใน Next.js 15 ขึ้นไป <code className="font-mono">params</code> ใน Route Handler และ Page เป็น Promise ต้องเขียน <code className="font-mono font-bold">const &#123; id &#125; = await params;</code> เสมอ มิฉะนั้นค่าจะเป็น undefined หรือ type error
+                  ใน Next.js 15 ขึ้นไป <code className="font-mono">params</code> ใน Route Handler และ Page เป็น Promise ต้องเขียน <code className="font-mono font-bold">const &#123; id &#125; = await params;</code> เสมอ มิฉะนั้นค่าจะเป็น undefined หรือเกิด Type error
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1.5">
                 <p className="font-bold text-sm text-amber-900 flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  2. แปลง String เป็น Number (ID)
+                  2. ลืมแปลง String เป็น Number (ID & FK)
                 </p>
                 <p className="text-xs text-amber-800 leading-relaxed">
-                  ค่า ID ที่ได้จาก URL params เป็น string เสมอ แต่ใน Data Model กำหนดเป็น number ต้องแปลงด้วย <code className="font-mono font-bold">Number(id)</code> ก่อนนำไป <code className="font-mono">find()</code> มิฉะนั้น <code className="font-mono">1 === &quot;1&quot;</code> จะได้ false
+                  ค่า ID ที่ได้จาก URL params หรือ Request body บางครั้งส่งมาเป็น string แต่ใน Store กำหนดเป็น number ต้องแปลงด้วย <code className="font-mono font-bold">Number(id)</code> ก่อนนำไปเปรียบเทียบ มิฉะนั้น <code className="font-mono">1 === &quot;1&quot;</code> จะได้ false
                 </p>
               </div>
 
@@ -1353,17 +1002,37 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
                   3. อย่าใส่ Content-Type เมื่อส่ง FormData
                 </p>
                 <p className="text-xs text-amber-800 leading-relaxed">
-                  ตอนใช้ <code className="font-mono">fetch(&apos;/api/upload&apos;, &#123; body: formData &#125;)</code> ห้ามใส่ Header <code className="font-mono">&apos;Content-Type&apos;: &apos;multipart/form-data&apos;</code> เด็ดขาด! เพราะจะทำให้หาย boundary string และเซิร์ฟเวอร์จะ parse ไฟล์ไม่สำเร็จ
+                  ตอนใช้ <code className="font-mono">fetch(&apos;/api/upload&apos;, &#123; body: formData &#125;)</code> ห้ามใส่ Header <code className="font-mono">&apos;Content-Type&apos;: &apos;multipart/form-data&apos;</code> เด็ดขาด! เพราะจะทำให้ขาด boundary string และเซิร์ฟเวอร์จะ parse ไฟล์ไม่สำเร็จ
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1.5">
                 <p className="font-bold text-sm text-amber-900 flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  4. ลืม Status Code ตาม REST
+                  4. ตรวจสอบ Foreign Key (userId) ก่อนบันทึก
                 </p>
                 <p className="text-xs text-amber-800 leading-relaxed">
-                  อย่าลืมส่ง Status: POST สำเร็จต้องส่ง <code className="font-mono font-bold text-emerald-700">201 Created</code>, ดึง/แก้/ลบสำเร็จส่ง <code className="font-mono font-bold text-emerald-700">200 OK</code>, และถ้าหา ID ไม่เจอต้องส่ง <code className="font-mono font-bold text-rose-700">404 Not Found</code>
+                  เมื่อทำ 2 ตารางสัมพันธ์ ใน <code className="font-mono">POST /api/books</code> ต้องเรียก <code className="font-mono font-bold">userExists(userId)</code> เสมอ หากไม่มีผู้ใช้นี้ในระบบ ต้องส่ง <code className="font-mono font-bold text-rose-700">400 Bad Request</code> ทันที
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1.5">
+                <p className="font-bold text-sm text-amber-900 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  5. อย่าลืม Status Code ตาม REST
+                </p>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  อย่าลืมส่ง Status ให้ถูกตามเกณฑ์ตรวจ: POST สำเร็จส่ง <code className="font-mono font-bold text-emerald-700">201 Created</code>, GET/PUT/DELETE สำเร็จส่ง <code className="font-mono font-bold text-emerald-700">200 OK</code>, และถ้าหา ID ไม่เจอส่ง <code className="font-mono font-bold text-rose-700">404 Not Found</code>
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1.5">
+                <p className="font-bold text-sm text-amber-900 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  6. ลืมทำ Cascade Delete เมื่อลบ Parent
+                </p>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  เมื่อสั่งลบผู้ใช้ (Users) หนังสือของคนนั้นต้องถูกลบออกจาก Books Store ด้วย มิฉะนั้นเวลาหน้าจอแสดงผลจะเกิด Bug หรือแสดง <code className="font-mono">&quot;User #999&quot;</code> ที่ไม่มีตัวตนอยู่จริง
                 </p>
               </div>
             </div>
