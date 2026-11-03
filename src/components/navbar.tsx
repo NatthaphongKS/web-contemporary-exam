@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, BookMarked, Terminal, Sparkles } from "lucide-react";
+import { BookOpen, BookMarked, Terminal, Sparkles, Zap } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -19,6 +19,12 @@ export function Navbar() {
       label: "คู่มือเตรียมสอบ (Study Guide)",
       icon: Terminal,
       active: pathname.startsWith("/guide"),
+    },
+    {
+      href: "/openapi-guide",
+      label: "OpenAPI & Postman Gen (ไม่ต้องเริ่มจาก 0)",
+      icon: Zap,
+      active: pathname.startsWith("/openapi-guide"),
     },
   ];
 

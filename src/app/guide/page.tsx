@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import {
   Terminal,
@@ -12,6 +13,8 @@ import {
   BookmarkCheck,
   Sparkles,
   Users,
+  Zap,
+  ArrowRight,
 } from "lucide-react";
 
 export default function StudyGuidePage() {
@@ -36,6 +39,23 @@ export default function StudyGuidePage() {
           สรุปขั้นตอนและโค้ดฉบับเต็มเหมือนโค้ดจริงในโปรเจกต์ทุกประการ: การสร้างโปรเจกต์ Next.js, การจำลองข้อมูล In-Memory Store,
           การสร้าง RESTful API (CRUD) ครบทุก Status Code, การทำ File Upload, และตัวอย่างคำสั่ง cURL พร้อมปุ่มกดคัดลอก (1-Click Copy)
         </p>
+
+        {/* OpenAPI Banner Tip */}
+        <div className="mt-4 p-3.5 rounded-xl bg-linear-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-200 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800">
+            <Zap className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>
+              <strong>เคล็ดลับจากอาจารย์:</strong> มีไฟล์ Swagger / OpenAPI มาให้? ไปดูวิธี Gen Code ใน 30 วิ ไม่ต้องเริ่ม Backend จาก 0
+            </span>
+          </div>
+          <Link
+            href="/openapi-guide"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-2xs"
+          >
+            <span>ดูคู่มือ OpenAPI & Postman</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* Tabs Bar */}

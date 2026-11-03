@@ -1,0 +1,312 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Library & Users Management API",
+    "description": "OpenAPI 3.0 Document สำหรับการสอบปฏิบัติวิชา Web Contemporary - ระบบจัดการหนังสือและสมาชิกห้องสมุด (2 ตารางสัมพันธ์ CRUD + File Upload)",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/books": {
+      "get": {
+        "summary": "ดึงรายการหนังสือทั้งหมด (รองรับ Filter)",
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" }, "description": "ค้นหาตามชื่อหนังสือหรือผู้แต่ง" },
+          { "name": "isAvailable", "in": "query", "schema": { "type": "boolean" }, "description": "กรองตามสถานะการยืม (true/false)" },
+          { "name": "userId", "in": "query", "schema": { "type": "integer" }, "description": "กรองหนังสือตามรหัสผู้ยืม" }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงข้อมูลสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Book" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "เพิ่มหนังสือเล่มใหม่",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateBookDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "สร้างข้อมูลใหม่สำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Book" }
+              }
+            }
+          },
+          "400": { "description": "ข้อมูลไม่ถูกต้องหรือไม่ครบถ้วน" }
+        }
+      }
+    },
+    "/books/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+      ],
+      "get": {
+        "summary": "ดึงข้อมูลหนังสือเล่มเดียว",
+        "responses": {
+          "200": {
+            "description": "พบข้อมูล",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Book" } }
+            }
+          },
+          "404": { "description": "ไม่พบหนังสือตาม ID" }
+        }
+      },
+      "put": {
+        "summary": "แก้ไขข้อมูลหนังสือ",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateBookDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "แก้ไขสำเร็จ",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Book" } }
+            }
+          },
+          "404": { "description": "ไม่พบหนังสือที่ต้องการแก้ไข" }
+        }
+      },
+      "delete": {
+        "summary": "ลบหนังสือ",
+        "responses": {
+          "200": { "description": "ลบสำเร็จ" },
+          "404": { "description": "ไม่พบหนังสือที่ต้องการลบ" }
+        }
+      }
+    },
+    "/books/{id}/borrow": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+      ],
+      "post": {
+        "summary": "ยืมหนังสือให้ผู้ใช้",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId"],
+                "properties": {
+                  "userId": { "type": "integer", "example": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "ยืมหนังสือสำเร็จ" },
+          "400": { "description": "หนังสือถูกยืมอยู่แล้ว หรือข้อมูลไม่ถูกต้อง" }
+        }
+      }
+    },
+    "/books/{id}/return": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+      ],
+      "post": {
+        "summary": "คืนหนังสือกลับเข้าห้องสมุด",
+        "responses": {
+          "200": { "description": "คืนหนังสือสำเร็จ" },
+          "404": { "description": "ไม่พบหนังสือ" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "ดึงรายชื่อสมาชิกทั้งหมด",
+        "responses": {
+          "200": {
+            "description": "ดึงสมาชิกสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "เพิ่มสมาชิกใหม่",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateUserDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "เพิ่มสมาชิกใหม่สำเร็จ" },
+          "400": { "description": "ข้อมูลไม่ถูกต้อง" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+      ],
+      "get": {
+        "summary": "ดึงข้อมูลสมาชิกตาม ID",
+        "responses": {
+          "200": { "description": "พบข้อมูล" },
+          "404": { "description": "ไม่พบสมาชิก" }
+        }
+      },
+      "put": {
+        "summary": "แก้ไขข้อมูลสมาชิก",
+        "responses": {
+          "200": { "description": "แก้ไขสำเร็จ" },
+          "404": { "description": "ไม่พบสมาชิก" }
+        }
+      },
+      "delete": {
+        "summary": "ลบสมาชิกและคืนหนังสือที่ยืมอยู่",
+        "responses": {
+          "200": { "description": "ลบสำเร็จ" },
+          "404": { "description": "ไม่พบสมาชิก" }
+        }
+      }
+    },
+    "/users/{id}/books": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+      ],
+      "get": {
+        "summary": "ดึงเฉพาะหนังสือที่สมาชิกคนนี้ยืมอยู่",
+        "responses": {
+          "200": { "description": "ดึงข้อมูลสำเร็จ" },
+          "404": { "description": "ไม่พบสมาชิก" }
+        }
+      }
+    },
+    "/upload": {
+      "post": {
+        "summary": "อัปโหลดไฟล์รูปภาพปกหนังสือ",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "อัปโหลดสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "url": { "type": "string", "example": "/uploads/1700000000_cover.png" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "ไม่มีไฟล์หรือขนาดเกิน 5MB" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Book": {
+        "type": "object",
+        "required": ["id", "title", "author", "publishedYear", "isAvailable"],
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "title": { "type": "string", "example": "Clean Code" },
+          "author": { "type": "string", "example": "Robert C. Martin" },
+          "publishedYear": { "type": "integer", "example": 2008 },
+          "isAvailable": { "type": "boolean", "example": true },
+          "coverUrl": { "type": "string", "nullable": true, "example": null },
+          "userId": { "type": "integer", "nullable": true, "example": null },
+          "borrowedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "borrowerName": { "type": "string", "nullable": true }
+        }
+      },
+      "CreateBookDto": {
+        "type": "object",
+        "required": ["title", "author", "publishedYear"],
+        "properties": {
+          "title": { "type": "string", "example": "Design Patterns" },
+          "author": { "type": "string", "example": "GoF" },
+          "publishedYear": { "type": "integer", "example": 1994 },
+          "isAvailable": { "type": "boolean", "example": true },
+          "coverUrl": { "type": "string", "nullable": true },
+          "userId": { "type": "integer", "nullable": true }
+        }
+      },
+      "UpdateBookDto": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "author": { "type": "string" },
+          "publishedYear": { "type": "integer" },
+          "isAvailable": { "type": "boolean" },
+          "coverUrl": { "type": "string", "nullable": true },
+          "userId": { "type": "integer", "nullable": true }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": ["id", "name", "email", "role"],
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "สมชาย ใจดี" },
+          "email": { "type": "string", "example": "somchai@example.com" },
+          "role": { "type": "string", "enum": ["student", "teacher", "member"], "example": "student" },
+          "borrowedBooksCount": { "type": "integer", "example": 1 }
+        }
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "required": ["name", "email"],
+        "properties": {
+          "name": { "type": "string", "example": "อลิสา มั่นคง" },
+          "email": { "type": "string", "example": "alisa@example.com" },
+          "role": { "type": "string", "enum": ["student", "teacher", "member"], "default": "student" }
+        }
+      }
+    }
+  }
+}
