@@ -96,18 +96,18 @@ export function BookTable({
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
                     book.isAvailable
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-slate-100 text-slate-700 border-slate-200"
                   }`}
                 >
                   {book.isAvailable ? (
                     <>
                       <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>พร้อมให้ยืม</span>
+                      <span>พร้อมใช้งาน</span>
                     </>
                   ) : (
                     <>
-                      <XCircle className="w-3 h-3 text-amber-600" />
-                      <span>ถูกยืมอยู่</span>
+                      <XCircle className="w-3 h-3 text-slate-500" />
+                      <span>ไม่พร้อมใช้งาน</span>
                     </>
                   )}
                 </span>
@@ -131,7 +131,7 @@ export function BookTable({
                   <button
                     onClick={() => onToggleStatus(book.id)}
                     className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                    title={book.isAvailable ? "ทำรายการยืมหนังสือ" : "ทำรายการคืนหนังสือ"}
+                    title="สลับสถานะพร้อมใช้งาน"
                   >
                     <ArrowRightLeft className="w-4 h-4" />
                   </button>

@@ -15,7 +15,6 @@ export interface User {
   role?: "student" | "teacher" | "member"; // บทบาท (Optional สำหรับแสดงผล)
   avatarUrl?: string | null;   // รูปโปรไฟล์ (Optional)
   booksCount?: number;         // จำนวนหนังสือที่ครอบครอง (Computed field)
-  borrowedBooksCount?: number; // จำนวนหนังสือที่ครอบครอง (Alias)
   createdAt?: string;          // วันที่สร้างข้อมูล
 }
 

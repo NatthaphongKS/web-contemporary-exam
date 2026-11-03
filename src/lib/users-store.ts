@@ -59,7 +59,6 @@ export function getAllUsers(): User[] {
     return {
       ...u,
       booksCount: count,
-      borrowedBooksCount: count,
     };
   });
 }
@@ -77,7 +76,6 @@ export function getUserById(id: number): User | undefined {
   return {
     ...user,
     booksCount: count,
-    borrowedBooksCount: count,
   };
 }
 
@@ -95,7 +93,6 @@ export function createUser(dto: CreateUserDto): User {
     role: dto.role || "student",
     avatarUrl: dto.avatarUrl || null,
     booksCount: 0,
-    borrowedBooksCount: 0,
     createdAt: new Date().toISOString(),
   };
 

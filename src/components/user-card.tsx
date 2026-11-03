@@ -98,20 +98,20 @@ export function UserCard({
         </div>
       </div>
 
-      {/* Footer: Borrowed Count Badge */}
+      {/* Footer: Books Count Badge */}
       <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 font-medium">
           <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
-          <span className="text-slate-600">หนังสือที่ถือครอง:</span>
+          <span className="text-slate-600">จำนวนหนังสือ:</span>
         </div>
         <span
           className={`px-2 py-0.5 rounded-full font-mono font-bold text-xs ${
-            (user.borrowedBooksCount || 0) > 0
-              ? "bg-amber-100 text-amber-800 border border-amber-200"
+            (user.booksCount || 0) > 0
+              ? "bg-indigo-100 text-indigo-800 border border-indigo-200"
               : "bg-slate-100 text-slate-500"
           }`}
         >
-          {user.borrowedBooksCount || 0} เล่ม
+          {user.booksCount || 0} เล่ม
         </span>
       </div>
     </div>

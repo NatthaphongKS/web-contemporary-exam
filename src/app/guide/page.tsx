@@ -404,7 +404,7 @@ export function deleteBook(id: number): boolean {
 }
 
 /**
- * สลับสถานะการยืม (isAvailable)
+ * สลับสถานะหนังสือ (isAvailable)
  */
 export function toggleAvailability(id: number): Book | undefined {
   const book = getBookById(id);
@@ -946,7 +946,7 @@ export function FileUploader({
               โค้ดจริง: Optimistic Update & Silent Background Fetch
             </h2>
             <p className="text-sm text-slate-600">
-              โค้ดจริงจาก <code className="font-mono text-indigo-600">src/app/page.tsx</code> สำหรับสลับสถานะยืม/คืนหนังสือแบบทันที ไม่กระตุก ไม่เลื่อน และดึงข้อมูลจริงมา sync ใน background:
+              โค้ดจริงจาก <code className="font-mono text-indigo-600">src/app/page.tsx</code> สำหรับสลับสถานะหนังสือแบบทันที (Optimistic Update) ไม่กระตุก ไม่เลื่อน และดึงข้อมูลจริงมา sync ใน background:
             </p>
 
             <CodeBlock
@@ -962,7 +962,7 @@ const fetchBooks = useCallback(async (isBackground = false) => {
     const params = new URLSearchParams();
     if (search.trim()) params.append("search", search.trim());
     if (filterAvailable === "available") params.append("isAvailable", "true");
-    if (filterAvailable === "borrowed") params.append("isAvailable", "false");
+    if (filterAvailable === "unavailable") params.append("isAvailable", "false");
 
     const res = await fetch(\`/api/books?\${params.toString()}\`);
     if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลหนังสือได้");
@@ -1008,8 +1008,8 @@ const handleToggleStatus = async (id: number) => {
 
     toast({
       type: "success",
-      title: newStatus ? "ทำรายการคืนสำเร็จ" : "ทำรายการยืมสำเร็จ",
-      message: \`หนังสือ "\${data.title}" สถานะคือ: \${newStatus ? "พร้อมให้ยืม" : "ถูกยืมอยู่"}\`,
+      title: "เปลี่ยนสถานะหนังสือสำเร็จ",
+      message: \`หนังสือ "\${data.title}" สถานะคือ: \${newStatus ? "พร้อมใช้งาน" : "ไม่พร้อมใช้งาน"}\`,
       status: 200,
     });
 
@@ -1184,7 +1184,7 @@ export function getAllUsers(): User[] {
 
   return users.map((u) => ({
     ...u,
-    borrowedBooksCount: books.filter((b) => b.userId === u.id).length,
+    booksCount: books.filter((b) => b.userId === u.id).length,
   }));
 }
 
@@ -1195,7 +1195,7 @@ export function getUserById(id: number): User | undefined {
   const books = globalThis.__libraryBooksStore || [];
   return {
     ...user,
-    borrowedBooksCount: books.filter((b) => b.userId === user.id).length,
+    booksCount: books.filter((b) => b.userId === user.id).length,
   };
 }
 
@@ -1208,7 +1208,7 @@ export function createUser(dto: CreateUserDto): User {
     name: dto.name.trim(),
     email: dto.email.trim(),
     role: dto.role || "student",
-    borrowedBooksCount: 0,
+    booksCount: 0,
     createdAt: new Date().toISOString(),
   };
 
@@ -1221,11 +1221,9 @@ export function deleteUser(id: number): boolean {
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return false;
 
-  // คืนหนังสือที่ผู้ใช้คนนี้ยืมอยู่ทั้งหมด (Cascade)
+  // Cascade: ลบหนังสือทั้งหมดของผู้ใช้คนนี้ออกด้วย
   if (globalThis.__libraryBooksStore) {
-    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.map((book) =>
-      book.userId === id ? { ...book, userId: null, isAvailable: true, borrowedAt: null } : book
-    );
+    globalThis.__libraryBooksStore = globalThis.__libraryBooksStore.filter((book) => book.userId !== id);
   }
 
   users.splice(index, 1);
@@ -1236,37 +1234,41 @@ export function deleteUser(id: number): boolean {
 
             <h2 className="text-lg font-bold text-slate-900 pt-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">12</span>
-              โค้ดจริง: Route Handlers ยืม & คืนหนังสือ
+              โค้ดจริง: Route Handler ดึงหนังสือตามผู้ใช้ (src/app/api/users/[id]/books/route.ts)
             </h2>
             <p className="text-sm text-slate-600">
-              สร้าง Route Handler สำหรับยืมหนังสือให้ผู้ใช้ (`/api/books/:id/borrow`) และคืนหนังสือ (`/api/books/:id/return`):
+              สร้าง Route Handler สำหรับดึงรายการหนังสือทั้งหมดของสมาชิกคนนั้น (`GET /api/users/:id/books`):
             </p>
 
             <CodeBlock
-              title="src/app/api/books/[id]/borrow/route.ts & return/route.ts"
+              title="src/app/api/users/[id]/books/route.ts"
               language="typescript"
-              code={`// POST /api/books/:id/borrow
-// Body: { userId: number }
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const body = await request.json();
-  const result = borrowBook(Number(id), Number(body.userId));
+              code={`import { NextResponse } from "next/server";
+import { getUserById } from "@/lib/users-store";
+import { getBooksByUserId } from "@/lib/books-store";
 
-  if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id: rawId } = await params;
+    const id = Number(rawId);
+
+    const user = getUserById(id);
+    if (!user) {
+      return NextResponse.json({ error: \`ไม่พบผู้ใช้ ID = \${id}\` }, { status: 404 });
+    }
+
+    const books = getBooksByUserId(id);
+    return NextResponse.json(
+      {
+        user: { id: user.id, name: user.name, email: user.email },
+        booksCount: books.length,
+        books,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-  return NextResponse.json({ message: "ยืมหนังสือสำเร็จ", book: result.book }, { status: 200 });
-}
-
-// POST /api/books/:id/return
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const result = returnBook(Number(id));
-
-  if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
-  }
-  return NextResponse.json({ message: "คืนหนังสือสำเร็จ", book: result.book }, { status: 200 });
 }`}
             />
           </div>
@@ -1345,23 +1347,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             />
 
             <CodeBlock
-              title="9. ดึงหนังสือที่ผู้ใช้คนนี้ยืมอยู่ (GET /api/users/1/books -> 200 OK)"
+              title="9. ดึงรายการหนังสือของสมาชิก (GET /api/users/1/books -> 200 OK)"
               language="bash"
               code="curl -X GET http://localhost:3000/api/users/1/books"
             />
 
             <CodeBlock
-              title="10. ทำรายการยืมหนังสือให้ผู้ใช้ (POST /api/books/1/borrow -> 200 OK)"
+              title="10. สลับสถานะหนังสือ (PUT /api/books/1 -> 200 OK)"
               language="bash"
-              code={`curl -X POST http://localhost:3000/api/books/1/borrow \\
+              code={`curl -X PUT http://localhost:3000/api/books/1 \\
   -H "Content-Type: application/json" \\
-  -d '{"userId": 1}'`}
-            />
-
-            <CodeBlock
-              title="11. ทำรายการคืนหนังสือเข้าห้องสมุด (POST /api/books/1/return -> 200 OK)"
-              language="bash"
-              code="curl -X POST http://localhost:3000/api/books/1/return"
+  -d '{"isAvailable": false}'`}
             />
           </div>
         </section>

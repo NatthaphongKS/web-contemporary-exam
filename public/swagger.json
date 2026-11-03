@@ -101,44 +101,6 @@
         }
       }
     },
-    "/books/{id}/borrow": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
-      "post": {
-        "summary": "ยืมหนังสือให้ผู้ใช้",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["userId"],
-                "properties": {
-                  "userId": { "type": "integer", "example": 1 }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "ยืมหนังสือสำเร็จ" },
-          "400": { "description": "หนังสือถูกยืมอยู่แล้ว หรือข้อมูลไม่ถูกต้อง" }
-        }
-      }
-    },
-    "/books/{id}/return": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-      ],
-      "post": {
-        "summary": "คืนหนังสือกลับเข้าห้องสมุด",
-        "responses": {
-          "200": { "description": "คืนหนังสือสำเร็จ" },
-          "404": { "description": "ไม่พบหนังสือ" }
-        }
-      }
-    },
     "/users": {
       "get": {
         "summary": "ดึงรายชื่อสมาชิกทั้งหมด",

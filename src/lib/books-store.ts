@@ -75,14 +75,13 @@ if (!globalThis.__libraryBooksStore) {
  */
 function enrichBookWithUser(book: Book): Book {
   if (!globalThis.__libraryUsersStore) {
-    return { ...book, userName: null, borrowerName: null };
+    return { ...book, userName: null };
   }
   const user = globalThis.__libraryUsersStore.find((u) => u.id === book.userId);
   const name = user ? user.name : `User #${book.userId}`;
   return {
     ...book,
     userName: name,
-    borrowerName: name, // รักษา backward compatibility ให้ UI
   };
 }
 
@@ -190,40 +189,15 @@ export function deleteBook(id: number): boolean {
 }
 
 /**
- * ยืมหนังสือ (เปลี่ยนสถานะ isAvailable และผูก userId)
+ * สลับสถานะหนังสือ (พร้อมใช้งาน <-> ไม่พร้อมใช้งาน)
  */
-export function borrowBook(bookId: number, userId: number): { success: boolean; error?: string; book?: Book } {
+export function toggleBookAvailability(bookId: number): Book | undefined {
   const book = (globalThis.__libraryBooksStore || []).find((b) => b.id === bookId);
-  if (!book) {
-    return { success: false, error: "ไม่พบหนังสือเล่มนี้ในระบบ" };
-  }
+  if (!book) return undefined;
 
-  if (!book.isAvailable) {
-    return { success: false, error: "หนังสือเล่มนี้กำลังถูกยืมอยู่" };
-  }
-
-  const updated = updateBook(bookId, {
-    userId,
-    isAvailable: false,
+  return updateBook(bookId, {
+    isAvailable: !book.isAvailable,
   });
-
-  return { success: true, book: updated };
-}
-
-/**
- * คืนหนังสือ (เปลี่ยนสถานะ isAvailable = true)
- */
-export function returnBook(bookId: number): { success: boolean; error?: string; book?: Book } {
-  const book = (globalThis.__libraryBooksStore || []).find((b) => b.id === bookId);
-  if (!book) {
-    return { success: false, error: "ไม่พบหนังสือเล่มนี้ในระบบ" };
-  }
-
-  const updated = updateBook(bookId, {
-    isAvailable: true,
-  });
-
-  return { success: true, book: updated };
 }
 
 /**

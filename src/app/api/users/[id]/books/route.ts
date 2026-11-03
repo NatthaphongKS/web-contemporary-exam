@@ -8,7 +8,7 @@ interface RouteParams {
 
 /**
  * GET /api/users/:id/books
- * ดึงเฉพาะหนังสือที่ผู้ใช้คนนี้ยืมอยู่
+ * ดึงรายการหนังสือทั้งหมดของสมาชิกคนนี้ (1 : N)
  * Response: 200 OK / 404 Not Found (กรณีไม่พบผู้ใช้)
  */
 export async function GET(request: Request, { params }: RouteParams) {

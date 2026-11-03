@@ -272,7 +272,7 @@ export function BookModal({
                     onChange={(e) => setIsAvailable(e.target.checked)}
                     className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
                   />
-                  <span>{isAvailable ? "พร้อมให้ยืม / ว่าง" : "ไม่ว่าง / กำลังถูกยืม"}</span>
+                  <span>{isAvailable ? "พร้อมใช้งาน (Available)" : "ไม่พร้อมใช้งาน (Unavailable)"}</span>
                 </label>
               </div>
             </div>

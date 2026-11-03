@@ -69,7 +69,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
 /**
  * DELETE /api/users/:id
- * ลบผู้ใช้ และปลดสถานะหนังสือที่ยืมอยู่ให้กลับเป็นว่าง
+ * ลบผู้ใช้ และลบหนังสือของสมาชิกคนนี้ออกด้วย (Cascade)
  * Response: 200 OK / 404 Not Found
  */
 export async function DELETE(request: Request, { params }: RouteParams) {

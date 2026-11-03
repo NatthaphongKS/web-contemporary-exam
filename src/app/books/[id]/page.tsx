@@ -97,8 +97,8 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
       setBook(data);
       toast({
         type: "success",
-        title: newStatus ? "ทำรายการคืนสำเร็จ" : "ทำรายการยืมสำเร็จ",
-        message: `หนังสือ "${data.title}" สถานะคือ: ${newStatus ? "พร้อมให้ยืม" : "ถูกยืมอยู่"}`,
+        title: "เปลี่ยนสถานะหนังสือสำเร็จ",
+        message: `หนังสือ "${data.title}" สถานะคือ: ${newStatus ? "พร้อมใช้งาน" : "ไม่พร้อมใช้งาน"}`,
         status: 200,
       });
 
@@ -232,18 +232,18 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md shadow-xs ${
                     book.isAvailable
                       ? "bg-emerald-500/90 text-white"
-                      : "bg-amber-500/90 text-white"
+                      : "bg-slate-700/90 text-white"
                   }`}
                 >
                   {book.isAvailable ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>พร้อมให้ยืม</span>
+                      <span>พร้อมใช้งาน</span>
                     </>
                   ) : (
                     <>
                       <XCircle className="w-3.5 h-3.5" />
-                      <span>ถูกยืมอยู่</span>
+                      <span>ไม่พร้อมใช้งาน</span>
                     </>
                   )}
                 </span>
@@ -316,7 +316,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                 }`}
               >
                 <ArrowRightLeft className="w-4 h-4" />
-                <span>{book.isAvailable ? "ทำรายการยืม (Borrow)" : "ทำรายการคืน (Return)"}</span>
+                <span>{book.isAvailable ? "ปิดการใช้งาน (Set Unavailable)" : "เปิดการใช้งาน (Set Available)"}</span>
               </button>
 
               <div className="flex items-center gap-2">
